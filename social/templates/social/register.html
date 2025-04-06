@@ -1,0 +1,92 @@
+{% extends "social/base.html" %}
+
+{% block title %}
+Реєстрація
+{% endblock %}
+
+{% block content %}
+<!-- <div class="page-register"> -->
+<section>
+
+    <form method="post">
+        <h1>Реєстрація</h1>
+        {% csrf_token %}
+        <div class="inputbox">
+            <ion-icon name="mail-outline"></ion-icon>
+            {{ form.email }}
+            <label for="id_email">Пошта:</label>
+        </div>
+        <div class="inputbox">
+            <ion-icon name="person-outline"></ion-icon>
+            {{ form.username }}
+            <label for="id_username">Юзернейм</label>
+        </div>
+        <div class="inputbox password-container">
+            <ion-icon name="lock-closed-outline"></ion-icon>
+            {{ form.password1 }}
+            <label for="id_password1">Пароль</label>
+            <span class="toggle-password" data-target="id_password1">
+                <i class="fas fa-eye"></i>
+            </span>
+        </div>
+        <div class="inputbox password-container">
+            <ion-icon name="lock-closed-outline"></ion-icon>
+            {{ form.password2 }}
+            <label for="id_password2">Повторіть пароль</label>
+            <span class="toggle-password" data-target="id_password2">
+                <i class="fas fa-eye"></i>
+            </span>
+        </div>
+        <button type="submit" class="btn btn-my m-3">Реєстрація</button>
+        <div class="register">
+            <p>Є акаунт? <a href="{% url 'login' %}">Увійти</a></p>
+        </div>
+    </form>
+</section>
+{% if form.errors %}
+    <ul class="error-list">
+        {% for field in form %}
+            {% for error in field.errors %}
+                <li>{{ error }}</li>
+            {% endfor %}
+        {% endfor %}
+    </ul>
+{% endif %}
+<!-- </div> -->
+    
+
+<script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+<script>
+    document.addEventListener('DOMContentLoaded', function () {
+        {% for message in messages %}
+        Swal.fire({
+            title: '{{ message.tags|default:"Помилка"|capfirst }}',
+            text: '{{ message }}',
+            icon: '{% if "error" in message.tags %}error{% elif "success" in message.tags %}success{% else %}info{% endif %}',
+            showCancelButton: true,
+            confirmButtonText: '{% if "success" in message.tags %}Перейти до профілю{% else %}OK{% endif %}',
+            cancelButtonText: 'Відміна',
+        }).then((result) => {
+            {% if "success" in message.tags %}
+            if (result.isConfirmed) {
+                window.location.href = "{% url 'users:account' %}";
+            }
+            {% endif %}
+        });
+        {% endfor %}
+
+        document.querySelectorAll('.toggle-password').forEach(toggle => {
+            const targetId = toggle.getAttribute('data-target');
+            const passwordField = document.querySelector(`#${targetId}`);
+            if (passwordField) {
+                toggle.addEventListener('click', function () {
+                    const type = passwordField.getAttribute('type') === 'password' ? 'text' : 'password';
+                    passwordField.setAttribute('type', type);
+                    this.querySelector('i').classList.toggle('fa-eye');
+                    this.querySelector('i').classList.toggle('fa-eye-slash');
+                });
+            }
+        });
+    });
+</script>
+{% endblock %}
