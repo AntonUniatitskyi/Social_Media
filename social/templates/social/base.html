@@ -27,7 +27,7 @@
             <li><a href="{% url 'home' %}" class="my-nav-link nav-link px-2"> {% if request.resolver_match.url_name == 'home' %}<ion-icon name="home" class="big-icon"></ion-icon>{% else %}<ion-icon name="home-outline" class="big-icon"></ion-icon>{% endif %}</a></li>
             <li><a href="#" class="my-nav-link nav-link px-2"><ion-icon name="add-circle-outline" class="big-icon"></ion-icon></a></li>
             <li><a href="#" class="my-nav-link nav-link px-2"><ion-icon name="chatbubbles-outline" class="big-icon"></ion-icon></a></li>
-            <li><a href="#" class="my-nav-link nav-link px-2"><ion-icon name="search-outline" class="big-icon"></ion-icon></a></li>
+            <li><a href="{% url 'search' %}" class="my-nav-link nav-link px-2">{% if request.resolver_match.url_name == 'search' %}<ion-icon name="search" class="big-icon"></ion-icon>{% else %}<ion-icon name="search-outline" class="big-icon"></ion-icon>{% endif %}</a></li>
             <li><a href="#" class="my-nav-link nav-link px-2"></a></li>
           </ul>
     

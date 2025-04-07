@@ -1,7 +1,21 @@
 from django.contrib.auth.forms import UserCreationForm, AuthenticationForm
 from django.contrib.auth.models import User, Group
-from django.forms import Form, EmailField, EmailInput, CharField, PasswordInput, TextInput, ChoiceField, ModelChoiceField, Select
+from django.forms import Form, EmailField, EmailInput, CharField, PasswordInput, TextInput, Textarea, ChoiceField, ModelChoiceField, Select
+from .models import Profile
+from django import forms
 
+class ProfileForm(forms.ModelForm):
+    class Meta:
+        model = Profile
+        fields = ['bio', 'avatar']
+        widgets = {
+            'bio': forms.Textarea(attrs={
+                'id': 'id_bio',
+                'rows': 4,
+                'placeholder': 'Розкажіть про себе...'
+            }),
+            'avatar': forms.ClearableFileInput()
+        }
 
 class UserForm(UserCreationForm):
     password1 = CharField(
@@ -35,6 +49,20 @@ class UserForm(UserCreationForm):
                 # 'class': 'form-control email',
                 # 'placeholder': 'Ваша пошта',
             }),
+        }
+
+
+class UserEditForm(forms.ModelForm):
+    class Meta:
+        model = User
+        fields = ['email', 'username', 'password']
+        widgets = {
+            'email': EmailInput(),
+            'username': TextInput(),
+            'password': PasswordInput(attrs={
+                'id': 'id_password',
+                'data-target': 'id_password'
+            })
         }
 
 

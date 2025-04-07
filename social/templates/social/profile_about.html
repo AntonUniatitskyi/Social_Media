@@ -1,46 +1,58 @@
 {% extends 'social/base.html' %}
 
 {% block title %}
-    Профіль
+    {% if profile.username %}
+        {{ profile.username }}
+    {% endif %}
 {% endblock title %}
 
 {% block content %}
 <div class="profile-container profile-acc">
+    {% if profile %}
+        <div class="profile-header" style="display: flex; align-items: center; gap: 40px;">
+            <div class="profile-image">
+                {% if profile.profile.avatar %}
+                    <img src="{{ profile.profile.avatar.url }}" alt="Аватар" class="avatar-profile">
+                {% else %}
+                    <img src="/media/avatars/default-avatar.png" alt="Аватар по умолчанию" class="avatar-profile">
+                {% endif %}
 
-    <div class="profile-header" style="display: flex; align-items: center; gap: 40px;">
-        <div class="profile-image">
-            {% if user.profile.avatar %}
-                <img src="{{ user.profile.avatar.url }}" alt="Аватар" class="avatar-profile">
-            {% else %}
-                <img src="/media/avatars/default-avatar.png" alt="Аватар по умолчанию" class="avatar-profile">
-            {% endif %}
-
-        </div>
-        <div class="profile-info">
-            <h2 style="font-size: 28px;">{{ user.username }}</h2>
-            <div style="display: flex; gap: 20px; margin: 10px 0;">
-                <span>{{ user.posts.count }} постів</span>
-                <button type="button" data-bs-toggle="modal" data-bs-target="#followersModal">{{ user.profile.followers_count }} підписників</button>
-                <button type="button" data-bs-toggle="modal" data-bs-target="#followingModal">{{ user.profile.following_count }} підписок</button>
             </div>
-            <p><strong>{{ user.first_name }} {{ user.last_name }}</strong></p>
-            <p style="max-width: 400px;">{{ user.profile.bio }}</p>
-            <a href="{% url 'edit' %}" class="unsubscribe-btn">Редагувати</a>
+            <div class="profile-info">
+                <h2 style="font-size: 28px;">{{ profile.username }}</h2>
+                <div style="display: flex; gap: 20px; margin: 10px 0;">
+                    <span>{{ profile.posts.count }} постів</span>
+                    <button type="button" data-bs-toggle="modal" data-bs-target="#followersModal">{{ profile.profile.followers_count }} підписників</button>
+                    <button type="button" data-bs-toggle="modal" data-bs-target="#followingModal">{{ profile.profile.following_count }} підписок</button>
+
+                </div>
+                {% if profile.profile.bio == None %}
+                    <p style="max-width: 400px;"></p>
+                {% else %}
+                    <p style="max-width: 400px;">{{ profile.profile.bio }}</p>
+                {% endif %}
+
+                {% if user != profile %}
+                    <form method="post" action="{% url 'follow' profile.username %}">
+                        {% csrf_token %}
+                        {% if user in profile.profile.followers.all %}
+                            <button type="submit" class="btn unsubscribe-btn"><ion-icon name="person-remove-outline"></ion-icon> Відписатись</button>
+                        {% else %}
+                            <button type="submit" class="btn subscribe-btn"><ion-icon name="person-add-outline"></ion-icon> Підписатись</button>
+                        {% endif %}
+                    </form>
+                {% endif %}
+            </div>
         </div>
-    </div>
 
-    <hr style="margin: 30px 0; border-color: gray;">
+        <hr style="margin: 30px 0; border-color: gray;">
 
-    <div class="no-posts" style="text-align: center; padding: 50px;">
-        <p style="font-size: 18px;">Поділіться фото</p>
-        <p>Фото, якими ви поділились, будуть з'являтись у вашому профілі.</p>
-    </div>
+        <div class="no-posts" style="text-align: center; padding: 50px;">
+            <p style="font-size: 18px;">Поділіться фото</p>
+            <p>Фото, якими ви поділились, будуть з'являтись у вашому профілі.</p>
+        </div>
 
-    <form method="post" action="{% url 'logout' %}">
-        {% csrf_token %}
-        <button type="submit" class="btn btn-secondary">Вийти</button>
-    </form>
-
+    {% endif %}
 </div>
 
 
@@ -75,7 +87,7 @@
   </div>
   
   <div class="modal fade" id="followingModal" tabindex="-1" aria-labelledby="followingModalLabel" aria-hidden="true">
-    <div class="modal-dialog modal-dialog-centered" style="width: 200px;">
+    <div class="modal-dialog modal-dialog-centered" style="width: 300px;">
       <div class="modal-content">
         <div class="modal-header">
           <h5 class="modal-title" id="followingModalLabel">Підписки</h5>

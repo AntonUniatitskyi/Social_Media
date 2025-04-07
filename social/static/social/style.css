@@ -15,76 +15,11 @@ input[type="password"] {
     border-color: black; /* Сброс границы (если требуется) */
 }
 
-/* Логин и Вход */
-/* Карточка -> Логін та вхід*/
-.card-my {
-    background-color: #ffffff;
-    border-radius: 15px;
-    box-shadow: 0 4px 10px rgba(0, 0, 0, 0.2);
-    padding: 20px;
-    margin: 20px auto;
-    text-align: left;
-    max-width: 500px;
-}
-
-/* Заголовок -> Логін та вхід*/
-.card-my h3 {
-    text-align: center;
-    font-family: 'Arial', sans-serif;
-    color: #333;
-    margin-bottom: 20px;
-}
-
-.card-my a {
-    color: rgb(205, 80, 80);
-}
-
-/* Форм-групи -> Логін та вхід */
-.form-group-my {
-    margin-bottom: 15px;
-}
-
-/* Мітки -> Логін та Вхід*/
-.form-group-my label {
-    font-size: 16px;
-    color: #000000;
-    margin: 5px;
-}
-
-/* Кнопка -> Логін та вхід*/
-.btn-my {
-    background-color: rgb(252, 117, 117);
-    border: none;
-    border-color: rgb(224, 103, 103);
-    border-radius: 8px;
-    padding: 10px 20px;
-    font-size: 16px;
-    cursor: pointer;
-    transition: all 0.3s ease;
-}
-
-.btn-my:hover {
-    background-color: rgb(245, 81, 81);
-}
-
-/* Пошта -> Логін і Вхід*/
-/* .email {
-    border: 2px solid rgb(0, 0, 0);
-    background-color: white;
-    color: black;
-    outline: none; 
-    transition: border-color 0.3s ease;
-}
-.email:focus {
-    border-color: rgb(0, 0, 0);
-    box-shadow: 0 0 8px rgba(130, 113, 116, 0.8); 
-} */
-
 /* Помилки -> Вхід*/
-.error-list {
+/* .error-list {
     color: red;
     margin-top: 10px;
-}
+} */
 
 .error-list li {
     list-style-type: none;
@@ -136,88 +71,6 @@ li a:hover {
     text-decoration: underline;
     }
 
-.card-user-group {
-    background-color: #ffffff;
-    border-radius: 15px;
-    /* box-shadow: 0 4px 10px rgba(0, 0, 0, 0.2); */
-    padding: 20px;
-    margin: 20px auto;
-    text-align: left;
-    max-width: 300px;
-}
-
-/* Заголовок -> Логін та вхід*/
-.card-user-group h3 {
-    text-align: left;
-    font-family: 'Arial', sans-serif;
-    color: #333;
-    margin-bottom: 20px;
-}
-
-.card-user-group a {
-    color: rgb(205, 80, 80);
-}
-
-.form-select:focus {
-    outline: none;
-    border-color: #b07d62;
-    box-shadow: 0 0 10px rgba(176, 125, 98, 0.8);
-    background-color: #ffffff;
-}
-
-details {
-    background: #ffffff;
-    padding: 10px;
-    border-radius: 10px;
-    width: 300px;
-    border: 1px solid #ccc;
-}
-
-.diary-container {
-    max-width: 800px;
-    margin: 0 auto;
-    background-color: white;
-    padding: 20px;
-    border-radius: 10px;
-    box-shadow: 0 0 10px rgba(0,0,0,0.1);
-}
-
-.diary h1 {
-    text-align: center;
-    color: #333;
-    margin-bottom: 30px;
-}
-
-table {
-    width: 100%;
-    border-collapse: collapse;
-    margin-bottom: 20px;
-}
-
-th, td {
-    padding: 12px;
-    text-align: left;
-    border-bottom: 1px solid #ddd;
-}
-
-th {
-    background-color: #585958;
-    color: white;
-}
-
-tr:hover {
-    background-color: #f5f5f5;
-}
-
-.grade {
-    font-weight: bold;
-    padding: 5px 10px;
-    border-radius: 5px;
-    display: inline-block;
-    background-color: #4CAF50;
-    color: white;
-}
-
 .password-container {
     position: relative;
     width: 100%;
@@ -234,90 +87,12 @@ tr:hover {
     cursor: pointer;
 }
 
-
-
-
-
-
-.portfolio{
-    display: flex;
-    flex-direction: row;
-    gap: 20px;
-    /* background-color: transparent;
-    backdrop-filter: blur(55px);
-    background-color: rgba(255, 255, 255, 0.2); */
-
-}
-.portfolio-container {
-    max-width: 500px;
-    background-color: white;
-    border-radius: 15px;
-    /* background-color: transparent;
-    backdrop-filter: blur(55px);
-    background-color: rgba(255, 255, 255, 0.4);
-     */
-}
-.portfolio-container p {
-    padding: 10px;
-}
-.portfolio-container-h {
-    display: flex;
-    align-items: center;
-    gap: 20px;
-    padding: 20px;
-    flex-direction: row;
-    height: fit-content;
-    /* background-color: transparent;
-    backdrop-filter: blur(55px); */
-}
-
-.portfolio-container-h img {
-    width: 50px;
-    height: 50px;
-    border-radius: 50%;
-    object-fit: cover;
-    object-position: center;
-}
-
-.portfolio-container-h h3 {
-    flex: 1;
-    text-decoration: none;
-    color: inherit;
-}
-
-.pagination .page-link {
-    color: #000000;
-}
-
-.pagination .page-item.active .page-link {
-    background-color: #74787c;
-    border-color: #000000;
-}
-
-.card {
-    transition: transform 0.2s;
-}
-
-.card:hover {
-    transform: translateY(-5px);
-}
-
 .my-nav-link {
     color: black;
 }
 
 .my-nav-link:hover {
     color: #838282;
-}
-
-.portfolio-account {
-    align-items: center;
-    text-align: center;
-    max-width: 600px;
-    border-radius: 10px;
-    box-shadow: 0 0 10px rgba(0,0,0,0.1);
-    background-color: white;
-    padding: 10px;
 }
 
 * {
@@ -334,13 +109,6 @@ tr:hover {
     background-position: center;
     background-size: cover;
 }
-
-/* Если тёмный бек */
-/* .page-register a {
-    color: #fff !important;
-    font-weight: 600 !important;
-    text-decoration: none !important;
-} */
 
 .page-register section {
     position: relative;
@@ -503,4 +271,189 @@ input:valid ~ label {
     margin: auto;
     padding: 20px;
     color: rgb(0, 0, 0);
+}
+
+.search-box {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    max-width: 800px;
+    flex-direction: column;
+}
+
+.search-box input {
+    max-width: 500px;
+    min-width: 100px;
+    border-radius: 15px;
+    text-align: center;
+    border-color: #515050;
+    box-shadow: 0 0 10px #74787c;
+    background-color: #f4f4f9;
+    height: 30px;
+    margin-bottom: 20px;
+}
+
+.search-box input:focus {
+    border-color: #000000 !important;
+}
+
+.subscribe-btn {
+    background-color: #74787c;
+    border-color: #000000;
+    color: #f5f5f5;
+}
+
+.subscribe-btn:hover {
+    background-color: #666;
+    border-color: #000000;
+    color: #fff;
+}
+
+.unsubscribe-btn {
+    background-color: transparent;
+    border-color: #000000;
+    color: #000000;
+}
+
+.unsubscribe-btn:hover {
+    background-color: #f5f5f5;
+    border-color: #000000;
+    color: #000000;
+}
+
+.unsubscribe-btn ion-icon {
+    color: #000000;
+}
+
+
+/* Стили для ошибок */
+.error-list {
+    list-style: none;
+    padding: 0;
+    margin-top: 20px;
+}
+
+.error-item {
+    color: red;
+    font-size: 14px;
+    margin-bottom: 10px;
+}
+
+
+
+/* Общие стили для формы */
+.form-container {
+    max-width: 500px;
+    margin: 0 auto;
+    padding: 30px;
+    background: #f9f9f9;
+    border-radius: 8px;
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+}
+
+.form-title {
+    font-size: 24px;
+    text-align: center;
+    margin-bottom: 20px;
+    font-weight: bold;
+}
+
+.inputbox-reg {
+    position: relative;
+    margin-bottom: 15px;
+}
+
+.inputbox-reg label {
+    font-size: 16px;
+    margin-bottom: 5px;
+    display: block;
+}
+
+.inputbox-reg input, .inputbox-reg textarea {
+    width: 100%;
+    padding: 10px;
+    font-size: 16px;
+    border: 1px solid #ddd;
+    border-radius: 4px;
+    background-color: white;
+}
+
+.inputbox-reg .input-icon {
+    position: absolute;
+    top: 50%;
+    right: 10px;
+    transform: translateY(-50%);
+    color: #888;
+}
+
+.file-upload {
+    display: flex;
+    align-items: center;
+}
+
+.file-container {
+    position: relative;
+    width: 100%;
+}
+
+.file-label {
+    display: inline-block;
+    padding: 8px 15px;
+    background: #008CBA;
+    color: #fff;
+    border-radius: 4px;
+    cursor: pointer;
+    margin-right: 10px;
+}
+
+.file-text {
+    font-size: 16px;
+    color: #555;
+}
+
+.file-button {
+    font-size: 14px;
+    text-decoration: underline;
+}
+
+.btn-submit {
+    width: 100%;
+    padding: 12px;
+    background: #4CAF50;
+    color: white;
+    font-size: 18px;
+    border: none;
+    border-radius: 5px;
+    cursor: pointer;
+    margin-top: 20px;
+}
+
+.btn-submit:hover {
+    background: #45a049;
+}
+
+/* Стили для ошибок */
+.error-list {
+    margin-top: 20px;
+    color: #d9534f;
+}
+
+.error-item {
+    margin-bottom: 5px;
+    font-size: 14px;
+}
+
+/* Адаптивность */
+@media (max-width: 768px) {
+    .form-container {
+        padding: 20px;
+    }
+
+    .inputbox input, .inputbox textarea {
+        font-size: 14px;
+    }
+
+    .btn-submit {
+        font-size: 16px;
+    }
 }
