@@ -5,34 +5,36 @@
 {% endblock title %}
 
 {% block content %}
-
     <div class="container search-box">
-        <input type="text" id="search-input" name="q" placeholder="Пошук за username" autocomplete="off">
+        <input type="text" id="search-input" name="q" placeholder="Пошук за username" autocomplete="off" class="mt-3">
         <ul role="list" id="search-results" class="divide-y divide-gray-100">
-    {% for account in accounts_list %} 
-            <li class="flex justify-between gap-x-6 py-3">
-                <div class="flex min-w-0 gap-x-4">
-                    {% if account.profile.avatar %}
-                        <img src="{{ account.profile.avatar.url }}" alt="Аватар" class="avatar-profile size-12 flex-none rounded-full bg-gray-50">
-                    {% else %}
-                        <img src="/media/avatars/default-avatar.png" alt="Аватар по умолчанию" class="avatar-profile size-12 flex-none rounded-full bg-gray-50">
-                    {% endif %}
-                    <div class="min-w-0 flex-auto">
-                        {% if account.username == user.username %}
-                        <p class="text-sm/6 font-semibold text-gray-900"><a href="{% url 'account' %}" style="color: inherit; text-decoration: none;">{{ account.username }}</a></p>
-                        {% else %}
-                            <p class="text-sm/6 font-semibold text-gray-900"><a href="{% url 'profile' account.username %}" style="color: inherit; text-decoration: none;">{{ account.username }}</a></p>
-                        {% endif %}
-                        <p class="mt-1 truncate text-xs/5 text-gray-500">{{ account.email }}</p>
-                    </div>
-                </div>
-                <div class="hidden shrink-0 sm:flex sm:flex-col sm:items-end">
-                    <p class="text-sm/6 text-gray-900">{{ account.profile.followers_count }} підписників</p>
-                    <p class="text-sm/6 text-gray-900">{{ account.profile.following_count }} підписок</p>
-                </div>
-            </li>
-    {% endfor %}
+            {% for account in accounts_list %}
+                {% if account.username == user.username %}
+                    <a href="{% url 'account' %}" class="block hover:bg-gray-100 transition rounded-md">
+                {% else %}
+                    <a href="{% url 'profile' account.username %}" class="block hover:bg-gray-100 transition rounded-md">
+                {% endif %}
+                    <li class="flex justify-between gap-x-6 py-2">
+                        <div class="flex min-w-0 gap-x-4">
+                            {% if account.profile.avatar %}
+                                <img src="{{ account.profile.avatar.url }}" alt="Аватар" class="avatar-profile size-12 flex-none rounded-full bg-gray-50">
+                            {% else %}
+                                <img src="/media/avatars/default-avatar.png" alt="Аватар по умолчанию" class="avatar-profile size-12 flex-none rounded-full bg-gray-50">
+                            {% endif %}
+                            <div class="min-w-0 flex-auto">
+                                <p class="text-sm/6 font-semibold text-gray-900">{{ account.username }}</p>
+                                <p class="mt-1 truncate text-xs/5 text-gray-500">{{ account.email }}</p>
+                            </div>
+                        </div>
+                        <div class="hidden shrink-0 sm:flex sm:flex-col sm:items-end">
+                            <p class="text-sm/6 text-gray-900">{{ account.profile.followers_count }} підписників</p>
+                            <p class="text-sm/6 text-gray-900">{{ account.profile.following_count }} підписок</p>
+                        </div>
+                    </li>
+                </a>
+            {% endfor %}
         </ul>
+          
     </div>
 
     <script>

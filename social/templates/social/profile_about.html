@@ -8,111 +8,346 @@
 
 {% block content %}
 <div class="profile-container profile-acc">
-    {% if profile %}
-        <div class="profile-header" style="display: flex; align-items: center; gap: 40px;">
-            <div class="profile-image">
-                {% if profile.profile.avatar %}
-                    <img src="{{ profile.profile.avatar.url }}" alt="Аватар" class="avatar-profile">
-                {% else %}
-                    <img src="/media/avatars/default-avatar.png" alt="Аватар по умолчанию" class="avatar-profile">
-                {% endif %}
+  {% if profile %}
+    <div class="profile-header -ml-7" style="display: flex; align-items: center; gap: 10px;">
+      <div class="profile-image">
+        {% if profile.profile.avatar %}
+          <img src="{{ profile.profile.avatar.url }}" alt="Аватар" class="avatar-profile">
+        {% else %}
+          <img src="/media/avatars/default-avatar.png" alt="Аватар по умолчанию" class="avatar-profile">
+        {% endif %}
+      </div>
+      <div class="profile-info">
+        <h2 style="font-size: 28px;">{{ profile.username }}</h2>
+        <div style="display: flex; gap: 20px; margin: 10px 0;">
+          <span>{{ profile.profile.publications_count }} постів</span>
+          <button type="button" onclick="toggleCard('followersCard')">{{ profile.profile.followers_count }} підписників</button>
+          <button type="button" onclick="toggleCard('followingCard')">{{ profile.profile.following_count }} підписок</button>
+        </div>
 
-            </div>
-            <div class="profile-info">
-                <h2 style="font-size: 28px;">{{ profile.username }}</h2>
-                <div style="display: flex; gap: 20px; margin: 10px 0;">
-                    <span>{{ profile.posts.count }} постів</span>
-                    <button type="button" data-bs-toggle="modal" data-bs-target="#followersModal">{{ profile.profile.followers_count }} підписників</button>
-                    <button type="button" data-bs-toggle="modal" data-bs-target="#followingModal">{{ profile.profile.following_count }} підписок</button>
+        {% if profile.profile.bio %}
+          <p style="max-width: 400px;">{{ profile.profile.bio }}</p>
+        {% else %}
+          <p style="max-width: 400px;"></p>
+        {% endif %}
 
+        {% if user != profile %}
+          <form method="post" action="{% url 'follow' profile.username %}">
+            {% csrf_token %}
+            {% if user in profile.profile.followers.all %}
+              <button type="submit" class="btn unsubscribe-btn"><ion-icon name="person-remove-outline"></ion-icon> Відписатись</button>
+            {% else %}
+              <button type="submit" class="btn subscribe-btn"><ion-icon name="person-add-outline"></ion-icon> Підписатись</button>
+            {% endif %}
+          </form>
+        {% endif %}
+      </div>
+    </div>
+
+    <hr style="margin: 30px 0; border-color: gray;">
+
+    {% if profile.profile.publications.exists %}
+    <div class="posts-list">
+        {% for publication in publications %}
+        <div class="post-page-container" data-publication-id="{{ publication.id }}">
+            <div class="post-media">
+                <div class="media_container">
+                    {% if publication.media_items.all %}
+                        <div class="swiper swiper-{{ publication.id }}">
+                            <div class="swiper-wrapper">
+                                {% for media in publication.media_items.all %}
+                                    <div class="swiper-slide">
+                                        {% if media.is_image %}
+                                            <img src="{{ media.file.url }}" alt="Публікація" style="max-height: 80vh; max-width: 100%; object-fit: contain;">
+                                        {% elif media.is_video %}
+                                            <video src="{{ media.file.url }}" controls style="max-height: 80vh; max-width: 100%;"></video>
+                                        {% endif %}
+                                    </div>
+                                {% endfor %}
+                            </div>
+                            <div class="swiper-button-next"></div>
+                            <div class="swiper-button-prev"></div>
+                            <div class="swiper-pagination"></div>
+                        </div>
+                    {% else %}
+                        <div style="color: #fff; text-align: center;">Без медіа</div>
+                    {% endif %}
                 </div>
-                {% if profile.profile.bio == None %}
-                    <p style="max-width: 400px;"></p>
-                {% else %}
-                    <p style="max-width: 400px;">{{ profile.profile.bio }}</p>
-                {% endif %}
-
-                {% if user != profile %}
-                    <form method="post" action="{% url 'follow' profile.username %}">
-                        {% csrf_token %}
-                        {% if user in profile.profile.followers.all %}
-                            <button type="submit" class="btn unsubscribe-btn"><ion-icon name="person-remove-outline"></ion-icon> Відписатись</button>
-                        {% else %}
-                            <button type="submit" class="btn subscribe-btn"><ion-icon name="person-add-outline"></ion-icon> Підписатись</button>
-                        {% endif %}
-                    </form>
-                {% endif %}
             </div>
-        </div>
+            <div class="post-details">
+                <div class="post-header">
+                    <div class="post-header-text">
+                        <div>
+                            {% if publication.profile.avatar %}
+                                <img src="{{ publication.profile.avatar.url }}" alt="Аватар" class="post-author">
+                            {% else %}
+                                <img src="/media/avatars/default-avatar.png" alt="Аватар" class="post-author">
+                            {% endif %}
+                        </div>
+                        <div>
+                            <strong>{{ publication.profile.user.username }}</strong><br>
+                            <small style="color: #888;">{{ publication.timestamp|date:"d.m.Y H:i" }}</small>
+                        </div>
+                    </div>
+                </div>
 
-        <hr style="margin: 30px 0; border-color: gray;">
+                <div class="post-comments comment-block" data-publication-id="{{ publication.id }}" style="max-height: 250px; overflow-y: auto; padding-right: 10px;">
+                    {% for comment in publication.comments.all %}
+                        <div style="margin-bottom: 15px;">
+                            <strong>{{ comment.user.user.username }}</strong>: {{ comment.text_com }}
+                            <small style="color: #888; display: block;">{{ comment.created_at|date:"d.m.Y H:i" }}</small>
+                        </div>
+                    {% empty %}
+                        <p style="color: #666;">Коментарів нема</p>
+                    {% endfor %}
+                </div>
 
-        <div class="no-posts" style="text-align: center; padding: 50px;">
-            <p style="font-size: 18px;">Поділіться фото</p>
-            <p>Фото, якими ви поділились, будуть з'являтись у вашому профілі.</p>
-        </div>
+                <div class="post-actions">
+                    <div style="margin-bottom: 10px;">
+                        <!--Тут форма лайка-->
+                        <form method="post" action="{% url 'like_publ' publication.id %}" data-publication-id="{{ publication.id }}" class="like-form" style="display: inline;">
+                            {% csrf_token %}
+                            <button type="submit" class="btn p-0 like" >
+                              {% if publication.liked_by_user %}
+                                  <ion-icon name="paw" style="font-size: 24px; color: red;"></ion-icon>  <!-- лайкнуто -->
+                              {% else %}
+                                  <ion-icon name="paw-outline" style="font-size: 24px;"></ion-icon>  <!-- не лайкнуто -->
+                              {% endif %}
+                              </button><p class="like-count">{{ publication.likes_count }} лайків</p>
+                              
+                        </form><hr>
+                    </div>
 
+                        <!--Тут форма коммента-->
+                        <form method="post" action="{% url 'create_comment' %}" class="comment-form" style="display: flex; justify-content: space-between; align-items: center; flex-direction: column;">
+                            {% csrf_token %}
+                            <input type="hidden" name="publication_id" value="{{ publication.id }}">
+                            {{ form.text_com }}
+                            <button type="submit" class="btn subscribe-btn ">Відправити</button>
+                        </form>
+                </div>
+            </div>
+            
+        </div><hr>
+        {% endfor %}
+    </div>
+      <!-- <div class="posts-grid">
+          <div class="post-item">
+          </div>
+      </div> -->
+    {% else %}
+      <div class="no-posts">
+        <p style="font-size: 18px;">Немає фото</p>
+        <p>Фото, якими поділились, будуть з'являтись у цьому профілі.</p>
+      </div>
     {% endif %}
+  {% endif %}
 </div>
 
+<!-- Floating card: Підписники -->
+<div id="followersCard" class="floating-card">
+  <div class="card-inner">
+    <div class="card-header">
+      <h5>Підписники</h5>
+      <span class="close-btn" onclick="toggleCard('followersCard')">&times;</span>
+    </div>
+    <div class="card-body">
+      {% for follower in followers %}
+        <div class="follower-item">
+            {% if follower.profile.avatar %}
+                <img src="{{ follower.profile.avatar.url }}" alt="Аватар" style="width: 50px; height: 50px; border-radius: 50%;">
+            {% else %}
+                <img src="/media/avatars/default-avatar.png" alt="Аватар по умолчанию" style="width: 50px; height: 50px; border-radius: 50%;">
+            {% endif %}
+          <div>
+            <p><a href="{% url 'profile' follower.username %}">{{ follower.username }}</a></p>
+            <small>{{ follower.email }}</small>
+          </div>
+        </div>
+      {% empty %}
+        <p>Немає підписників</p>
+      {% endfor %}
+    </div>
+  </div>
+</div>
 
-<div class="modal fade" id="followersModal" tabindex="-1" aria-labelledby="followersModalLabel" aria-hidden="true">
-    <div class="modal-dialog modal-dialog-centered" style="width: 300px;">
-      <div class="modal-content">
-        <div class="modal-header">
-          <h5 class="modal-title" id="followersModalLabel">Підписники</h5>
-          <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Закрити"></button>
+<!-- Floating card: Підписки -->
+<div id="followingCard" class="floating-card">
+  <div class="card-inner">
+    <div class="card-header">
+      <h5>Підписки</h5>
+      <span class="close-btn" onclick="toggleCard('followingCard')">&times;</span>
+    </div>
+    <div class="card-body">
+      {% for followed in following %}
+        <div class="follower-item">
+            {% if followed.profile.avatar %}
+                <img src="{{ followed.profile.avatar.url }}" alt="Аватар" style="width: 50px; height: 50px; border-radius: 50%;">
+            {% else %}
+                <img src="/media/avatars/default-avatar.png" alt="Аватар по умолчанию" style="width: 50px; height: 50px; border-radius: 50%;">
+            {% endif %}
+          <div>
+            <p><a href="{% url 'profile' followed.username %}">{{ followed.username }}</a></p>
+            <small>{{ followed.email }}</small>
+          </div>
         </div>
-        <div class="modal-body">
-            {% for follower in followers %}
-            <div style="display: flex; align-items: center; gap: 15px; margin-bottom: 15px;">
-              <div style="flex-shrink: 0;">
-                {% if follower.profile.avatar %}
-                  <img src="{{ follower.profile.avatar.url }}" alt="Аватар" style="width: 50px; height: 50px; border-radius: 50%;">
-                {% else %}
-                  <img src="/media/avatars/default-avatar.png" alt="Аватар по умолчанию" style="width: 50px; height: 50px; border-radius: 50%;">
-                {% endif %}
-              </div>
-              <div>
-                <p style="margin: 0;"><a href="{% url 'profile' username=follower.username %}">{{ follower.username }}</a></p>
-                <p style="margin: 0; font-size: 0.9em; color: #666;">{{ follower.email }}</p>
-              </div>
-            </div>
-          {% empty %}
-            <p>Немає підписників</p>
-          {% endfor %}
-        </div>
-      </div>
+      {% empty %}
+        <p>Немає підписок</p>
+      {% endfor %}
     </div>
   </div>
-  
-  <div class="modal fade" id="followingModal" tabindex="-1" aria-labelledby="followingModalLabel" aria-hidden="true">
-    <div class="modal-dialog modal-dialog-centered" style="width: 300px;">
-      <div class="modal-content">
-        <div class="modal-header">
-          <h5 class="modal-title" id="followingModalLabel">Підписки</h5>
-          <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Закрити"></button>
-        </div>
-        <div class="modal-body">
-            {% for followed in following %}
-            <div style="display: flex; align-items: center; gap: 15px; margin-bottom: 15px;">
-              <div style="flex-shrink: 0;">
-                {% if followed.profile.avatar %}
-                  <img src="{{ followed.profile.avatar.url }}" alt="Аватар" style="width: 50px; height: 50px; border-radius: 50%;">
-                {% else %}
-                  <img src="/media/avatars/default-avatar.png" alt="Аватар по умолчанию" style="width: 50px; height: 50px; border-radius: 50%;">
-                {% endif %}
-              </div>
-              <div>
-                <p style="margin: 0;"><a href="{% url 'profile' username=followed.username %}">{{ followed.username }}</a></p>
-                <p style="margin: 0; font-size: 0.9em; color: #666;">{{ followed.email }}</p>
-              </div>
-            </div>
-          {% empty %}
-            <p>Немає підписок</p>
-          {% endfor %}
-        </div>
-      </div>
-    </div>
-  </div>
+</div>
+
+<script>
+  function toggleCard(id) {
+    const card = document.getElementById(id);
+    card.style.display = card.style.display === 'block' ? 'none' : 'block';
+  }
+
+  document.addEventListener('DOMContentLoaded', function () {
+
+    // Закрытие карточек
+    window.addEventListener('click', function (e) {
+      document.querySelectorAll('.floating-card').forEach(card => {
+        if (!card.contains(e.target) && !e.target.matches('button')) {
+          card.style.display = 'none';
+        }
+      });
+    });
+
+    // Инициализация Swiper
+    document.querySelectorAll('.swiper').forEach(el => {
+      const swiperInstance = new Swiper(el, {
+        loop: true,
+        slidesPerView: 1,
+        pagination: {
+          el: el.querySelector('.swiper-pagination'),
+          clickable: true,
+        },
+        navigation: {
+          nextEl: el.querySelector('.swiper-button-next'),
+          prevEl: el.querySelector('.swiper-button-prev'),
+        },
+      });
+
+      el.querySelectorAll('img, video').forEach(media => {
+        media.addEventListener('load', () => swiperInstance.update());
+        media.addEventListener('loadeddata', () => swiperInstance.update());
+      });
+
+      window.addEventListener('resize', () => swiperInstance.update());
+    });
+
+    // AJAX-лайки
+    document.querySelectorAll('.like-form').forEach(form => {
+      form.addEventListener('submit', function (e) {
+        e.preventDefault();
+
+        const publicationId = this.dataset.publicationId;
+        const csrfToken = this.querySelector('[name=csrfmiddlewaretoken]').value;
+
+        fetch(`/like/${publicationId}/`, {
+          method: 'POST',
+          headers: {
+            'X-CSRFToken': csrfToken,
+            'X-Requested-With': 'XMLHttpRequest',
+          },
+        })
+        .then(response => response.json())
+        .then(data => {
+          if (data.success) {
+            const icon = this.querySelector('ion-icon');
+            icon.name = data.liked ? 'paw' : 'paw-outline';
+            icon.style.color = data.liked ? 'red' : '';
+            this.querySelector('.like-count').textContent = `${data.likes_count} лайків`;
+          }
+        });
+      });
+    });
+
+    // AJAX-комментарии
+    document.querySelectorAll('.comment-form').forEach(form => {
+      form.addEventListener('submit', function (e) {
+        e.preventDefault();
+
+        const formData = new FormData(this);
+        const csrfToken = this.querySelector('[name=csrfmiddlewaretoken]').value;
+        const publicationId = formData.get('publication_id');
+        const commentBlock = document.querySelector(`.comment-block[data-publication-id="${publicationId}"]`);
+
+        fetch(this.action, {
+          method: 'POST',
+          headers: {
+            'X-CSRFToken': csrfToken,
+            'X-Requested-With': 'XMLHttpRequest'
+          },
+          body: formData
+        })
+        .then(response => response.json())
+        .then(data => {
+          if (data.success) {
+            const newComment = document.createElement('div');
+            newComment.style.marginBottom = '15px';
+            newComment.innerHTML = `
+              <strong>${data.username}</strong>: ${data.text}
+              <small style="color: #888; display: block;">${data.timestamp}</small>
+            `;
+            commentBlock.appendChild(newComment);
+            const textInput = form.querySelector('textarea, input[name="text_com"]');
+            if (textInput) textInput.value = '';
+          } else {
+            alert('Помилка при надсиланні коментаря');
+          }
+        })
+        .catch(error => {
+          console.error('Помилка:', error);
+        });
+      });
+    });
+
+    // Двойной клик или тап по изображению внутри публикации — лайк
+    document.querySelectorAll('.swiper-slide img').forEach(img => {
+      let lastTap = 0;
+
+      const heart = document.createElement('ion-icon');
+      heart.name = 'paw';
+      heart.classList.add('heart-animation');
+      img.style.position = 'relative';
+      img.parentElement.style.position = 'relative';
+      img.parentElement.appendChild(heart);
+
+      function triggerLike(imgElement) {
+          const container = imgElement.closest('.post-page-container');
+          const publicationId = container?.dataset.publicationId;
+          const form = container.querySelector(`form.like-form`);
+
+          if (form) {
+          form.querySelector('button[type="submit"]').click();
+          }
+
+          // Показать анимацию сердечка
+          heart.classList.add('show');
+          setTimeout(() => heart.classList.remove('show'), 600);
+      }
+
+      img.addEventListener('touchend', function () {
+        const currentTime = new Date().getTime();
+        const tapLength = currentTime - lastTap;
+
+        if (tapLength < 300 && tapLength > 0) {
+          triggerLike(this);
+          }
+
+        lastTap = currentTime;
+      });
+
+      img.addEventListener('dblclick', function () {
+          triggerLike(this);
+      });
+    });
+
+  });
+</script>
+
+
 {% endblock content %}

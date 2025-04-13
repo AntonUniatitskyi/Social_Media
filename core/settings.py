@@ -28,6 +28,7 @@ SECRET_KEY = 'django-insecure-1u@&=zou2q4g(uk(&@^1rso=vhc_!u=#+-v3hspwxeg@7xbd1k
 DEBUG = True
 
 ALLOWED_HOSTS = ['*']
+CSRF_TRUSTED_ORIGINS = ['https://c96a-95-158-48-198.ngrok-free.app']
 
 
 # Application definition
@@ -138,7 +139,9 @@ SESSION_EXPIRE_AT_BROWSER_CLOSE = False  # Сессия не исчезает п
 SESSION_SAVE_EVERY_REQUEST = True  # Сохранять сессию после каждого запроса
 
 LOGIN_URL = '/login'
-LOGIN_REDIRECT_URL = '/'  # URL после успешного входа
+LOGIN_REDIRECT_URL = '/'
 LOGOUT_REDIRECT_URL = '/'
 
 ADMIN_EMAIL = config('ADMIN_EMAILS')
+
+CSRF_COOKIE_SECURE = True

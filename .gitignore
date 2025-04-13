@@ -12,3 +12,9 @@ __pycache__/
 .env
 
 *.sqlite3
+
+media/avatars/*
+!media/avatars/default-avatar.png
+
+media/publications/*
+!media/publications/roon_s.png

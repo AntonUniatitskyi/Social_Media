@@ -1,0 +1,93 @@
+{% extends 'social/base.html' %}
+
+{% block title %}
+    Створити
+{% endblock title %}
+
+{% block content %}
+<div class="create-post-container">
+  <form method="post" enctype="multipart/form-data" class="create-post-form">
+      {% csrf_token %}
+      
+      <div class="inputbox-reg">
+          <label for="id_text">Підпис</label>
+          {{ form.text }}
+          <ion-icon name="information-outline" class="input-icon"></ion-icon>
+      </div>
+
+      <label for="mediaInput" class="file-label-c">Додати медіа</label>
+      <input type="file" name="media" id="mediaInput" multiple accept="image/*,video/*" class="file-input">
+
+      <!-- SWIPER -->
+      <div class="swiper create-swiper" id="createSwiper">
+          <div class="swiper-wrapper" id="carouselInner"></div>
+          <div class="swiper-button-next"></div>
+          <div class="swiper-button-prev"></div>
+          <div class="swiper-pagination"></div>
+      </div>
+
+      <button type="submit" class="btn submit-btn">Опублікувати</button>
+  </form>
+</div>
+
+
+<!-- Custom JS -->
+<script>
+  const input = document.getElementById('mediaInput');
+  const carouselInner = document.getElementById('carouselInner');
+  let swiper;
+
+  input.addEventListener('change', function (event) {
+      const files = event.target.files;
+      carouselInner.innerHTML = '';
+
+      if (files.length > 10) {
+          alert("Максимум 10 файлів!");
+          input.value = "";
+          return;
+      }
+
+      for (let i = 0; i < files.length; i++) {
+          const file = files[i];
+          const fileURL = URL.createObjectURL(file);
+
+          const slide = document.createElement('div');
+          slide.classList.add('swiper-slide');
+
+          const wrapper = document.createElement('div');
+          wrapper.classList.add('media-wrapper-c');
+
+          if (file.type.startsWith('image/')) {
+              const img = document.createElement('img');
+              img.src = fileURL;
+              wrapper.appendChild(img);
+          } else if (file.type.startsWith('video/')) {
+              const video = document.createElement('video');
+              video.src = fileURL;
+              video.controls = true;
+              wrapper.appendChild(video);
+          }
+
+          slide.appendChild(wrapper);
+          carouselInner.appendChild(slide);
+      }
+
+      if (swiper) swiper.destroy(true, true);
+
+      swiper = new Swiper('.create-swiper', {
+          loop: true,
+          slidesPerView: 1,
+          pagination: {
+              el: '.swiper-pagination',
+              clickable: true,
+          },
+          navigation: {
+              nextEl: '.swiper-button-next',
+              prevEl: '.swiper-button-prev',
+          },
+      });
+
+      setTimeout(() => swiper.update(), 100);
+  });
+</script>
+{% endblock content %}
