@@ -1,23 +1,57 @@
 from django.contrib.auth.forms import UserCreationForm, AuthenticationForm
 from django.contrib.auth.models import User, Group
-from django.forms import Form, EmailField, EmailInput, CharField, PasswordInput, TextInput, ChoiceField, ModelChoiceField, Select
+from django.forms import Form, EmailField, EmailInput, CharField, PasswordInput, TextInput, Textarea, ChoiceField, ModelChoiceField, Select
+from .models import Profile, Publication, Comment
+from django import forms
 
+class CommentForm(forms.ModelForm):
+    class Meta:
+        model = Comment
+        fields = ['text_com']
+        widgets = {
+            'text_com': forms.Textarea(attrs={
+                'id': 'commentInput',
+                'rows': 2,
+                'placeholder': 'Ваш коментар',
+                # 'style': 'background-color: white; border-color: black; width: auto',
+                'class': 'comment-text'
+            })
+        }
+
+class PublicationForm(forms.ModelForm):
+    class Meta:
+        model = Publication
+        fields = ['text']
+        widgets = {
+            'text': forms.Textarea(attrs={
+                'id': 'id_text',
+                'rows': 2,
+                'placeholder': 'Підпис'
+            }),
+        }
+
+class ProfileForm(forms.ModelForm):
+    class Meta:
+        model = Profile
+        fields = ['bio', 'avatar']
+        widgets = {
+            'bio': forms.Textarea(attrs={
+                'id': 'id_bio',
+                'rows': 4,
+                'placeholder': 'Розкажіть про себе...'
+            }),
+            'avatar': forms.ClearableFileInput()
+        }
 
 class UserForm(UserCreationForm):
     password1 = CharField(
-        # label="Пароль",
         widget=PasswordInput(attrs={
-            # 'class': 'form-control email',
-            # 'placeholder': 'Придумайте пароль',
             'id': 'id_password1',
             'data-toggle': 'password',
         })
     )
     password2 = CharField(
-        # label="Повторіть пароль",
         widget=PasswordInput(attrs={
-            # 'class': 'form-control email',
-            # 'placeholder': 'Повторіть пароль',
             'id': 'id_password2',
             'data-toggle': 'password',
         })
@@ -28,30 +62,29 @@ class UserForm(UserCreationForm):
         fields = ["username", "email", "password1", "password2"]
         widgets = {
             "username": TextInput(attrs={
-                # 'class': 'form-control email',
-                # 'placeholder': 'Імя користувача',
             }),
             "email": EmailInput(attrs={
-                # 'class': 'form-control email',
-                # 'placeholder': 'Ваша пошта',
             }),
         }
 
 
+class UserEditForm(forms.ModelForm):
+    class Meta:
+        model = User
+        fields = ['email', 'username', 'password']
+        widgets = {
+            'email': EmailInput(),
+            'username': TextInput()
+        }
+
+
 class UserPasswordForm(AuthenticationForm):
-    # Переопределяем поле username как email
     username = CharField(
-        # label="Юзернейм",
         widget=TextInput(attrs={
-            # 'class': 'form-control email',
-            # 'placeholder': 'Ваш юзернейм',
         })
     )
     password = CharField(
-        # label="Пароль",
         widget=PasswordInput(attrs={
-            # 'class': 'form-control email',
-            # 'placeholder': 'Пароль',
             'id': 'id_password',
             'data-target': 'id_password',
         })

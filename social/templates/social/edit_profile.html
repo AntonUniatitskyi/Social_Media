@@ -1,0 +1,100 @@
+{% extends "social/base.html" %}
+
+{% block title %}
+Редагування
+{% endblock %}
+
+{% block content %}
+
+<section class="registration-section">
+    <form method="post" enctype="multipart/form-data" class="form-container">
+        <h1 class="form-title">Редагування</h1>
+        {% csrf_token %}
+        
+        <div class="inputbox-reg">
+            <label for="id_email">Пошта:</label>
+            {{ user_form.email }}
+            <ion-icon name="mail-outline" class="input-icon"></ion-icon>
+        </div>
+    
+        <div class="inputbox-reg">
+            <label for="id_username">Юзернейм</label>
+            {{ user_form.username }}
+            <ion-icon name="person-outline" class="input-icon"></ion-icon>
+        </div>
+    
+        <div class="inputbox-reg">
+            <label for="id_bio">Біо</label>
+            {{ profile_form.bio }}
+            <ion-icon name="information-outline" class="input-icon"></ion-icon>
+        </div>
+    
+        <div class="inputbox-reg file-upload">
+            <label for="id_avatar">Образ</label>
+            <div class="file-container">
+                {{ profile_form.avatar }}
+                
+            </div>
+            <ion-icon name="image-outline" class="input-icon"></ion-icon>
+        </div>
+    
+        <button type="submit" class="btn-submit">Зберегти</button>
+    </form>
+
+    {% if user_form.errors or profile_form.errors %}
+        <ul class="error-list">
+            {% for field in user_form %}
+                {% for error in field.errors %}
+                    <li class="error-item">{{ field.label }}: {{ error }}</li>
+                {% endfor %}
+            {% endfor %}
+            {% for field in profile_form %}
+                {% for error in field.errors %}
+                    <li class="error-item">{{ field.label }}: {{ error }}</li>
+                {% endfor %}
+            {% endfor %}
+            {% for error in user_form.non_field_errors %}
+                <li class="error-item">{{ error }}</li>
+            {% endfor %}
+            {% for error in profile_form.non_field_errors %}
+                <li class="error-item">{{ error }}</li>
+            {% endfor %}
+        </ul>
+    {% endif %}
+</section>
+
+<script>
+    document.addEventListener('DOMContentLoaded', function () {
+        {% for message in messages %}
+        Swal.fire({
+            title: '{{ message.tags|default:"Помилка"|capfirst }}',
+            text: '{{ message }}',
+            icon: '{% if "error" in message.tags %}error{% elif "success" in message.tags %}success{% else %}info{% endif %}',
+            showCancelButton: true,
+            confirmButtonText: '{% if "success" in message.tags %}Перейти до профілю{% else %}OK{% endif %}',
+            cancelButtonText: 'Відміна',
+        }).then((result) => {
+            {% if "success" in message.tags %}
+            if (result.isConfirmed) {
+                window.location.href = "{% url 'users:account' %}";
+            }
+            {% endif %}
+        });
+        {% endfor %}
+
+        document.querySelectorAll('.toggle-password').forEach(toggle => {
+            const targetId = toggle.getAttribute('data-target');
+            const passwordField = document.querySelector(`#${targetId}`);
+            if (passwordField) {
+                toggle.addEventListener('click', function () {
+                    const type = passwordField.getAttribute('type') === 'password' ? 'text' : 'password';
+                    passwordField.setAttribute('type', type);
+                    this.querySelector('i').classList.toggle('fa-eye');
+                    this.querySelector('i').classList.toggle('fa-eye-slash');
+                });
+            }
+        });
+    });
+</script>
+
+{% endblock %}
