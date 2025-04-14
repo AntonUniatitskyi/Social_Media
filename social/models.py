@@ -8,7 +8,7 @@ class Profile(models.Model):
     user = models.OneToOneField(User, on_delete=models.CASCADE)
     uusername = models.CharField(blank=True, null=True, max_length=200, unique=True)
     bio = models.TextField(blank=True, null=True)
-    avatar = models.ImageField(upload_to='avatars/', blank=True, null=True)
+    avatar = models.ImageField(upload_to='avatars/', blank=True, null=True, default='avatars/default-avatar.png')
     followers = models.ManyToManyField(User, related_name='following_profiles', blank=True)
 
     def __str__(self): return f"Профиль пользователя {self.user.username}"
@@ -17,6 +17,11 @@ class Profile(models.Model):
     def is_following(self, target_user): return self.user in target_user.profile.followers.all()
     def publications_count(self):
         return self.publications.count()
+    
+    def get_avatar_url(self):
+        if self.avatar and hasattr(self.avatar, 'url'):
+            return self.avatar.url
+        return '/media/avatars/default-avatar.png'
 
 class Publication(models.Model):
     profile = models.ForeignKey(Profile, on_delete=models.CASCADE, related_name='publications')

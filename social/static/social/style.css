@@ -894,3 +894,13 @@ mini-logo {
 .submit-btn:hover {
     background-color: #0052cc;
 }
+
+/* .green-dot {
+    @apply rounded-full bg-green-500 p-1.5;
+}
+.gray-dot {
+    @apply rounded-full bg-gray-500 p-1.5;
+}
+.graylight-dot {
+    @apply rounded-full bg-gray-300 p-1.5;
+} */

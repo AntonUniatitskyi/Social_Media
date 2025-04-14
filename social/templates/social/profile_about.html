@@ -45,6 +45,7 @@
               <button type="submit" class="btn subscribe-btn"><ion-icon name="person-add-outline"></ion-icon> Підписатись</button>
             {% endif %}
           </form>
+          <a class="button" href="{% url 'start-chat' profile.username %}">Повідомлення</a>
         {% endif %}
       </div>
     </div>
