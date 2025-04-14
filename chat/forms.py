@@ -10,7 +10,7 @@ class ChatMessageCreateForm(ModelForm):
             'body': forms.TextInput(attrs={
                 'placeholder': 'Введіть повідомлення...',
                 'class': (
-                    'w-full p-3 rounded-2xl bg-white text-black '
+                    'w-full p-1 rounded-2xl bg-white text-black '
                     'focus:outline-none focus:ring-2 focus:ring-emerald-400 '
                     'transition duration-200 shadow-inner'
                 ),

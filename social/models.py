@@ -6,6 +6,7 @@ from django.contrib.auth.models import User
 
 class Profile(models.Model):
     user = models.OneToOneField(User, on_delete=models.CASCADE)
+    uusername = models.CharField(blank=True, null=True, max_length=200, unique=True)
     bio = models.TextField(blank=True, null=True)
     avatar = models.ImageField(upload_to='avatars/', blank=True, null=True)
     followers = models.ManyToManyField(User, related_name='following_profiles', blank=True)

@@ -33,8 +33,12 @@ class PublicationForm(forms.ModelForm):
 class ProfileForm(forms.ModelForm):
     class Meta:
         model = Profile
-        fields = ['bio', 'avatar']
+        fields = ['bio', 'avatar', 'uusername']
         widgets = {
+            'uusername': forms.TextInput(attrs={
+                'id': 'uusername',
+                'placeholder': 'Ваш нік'
+            }),
             'bio': forms.Textarea(attrs={
                 'id': 'id_bio',
                 'rows': 4,
@@ -71,7 +75,7 @@ class UserForm(UserCreationForm):
 class UserEditForm(forms.ModelForm):
     class Meta:
         model = User
-        fields = ['email', 'username', 'password']
+        fields = ['email', 'username']
         widgets = {
             'email': EmailInput(),
             'username': TextInput()

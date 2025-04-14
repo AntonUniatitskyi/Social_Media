@@ -29,7 +29,7 @@ DEBUG = True
 
 ALLOWED_HOSTS = ['*']
 
-
+CSRF_TRUSTED_ORIGINS = ['https://20bc-95-158-48-198.ngrok-free.app']
 # Application definition
 
 INSTALLED_APPS = [
@@ -65,6 +65,15 @@ CHANNEL_LAYERS = {
         "BACKEND": "channels.layers.InMemoryChannelLayer",
     }
 }
+
+# CHANNEL_LAYERS = {
+#     "default": {
+#         "BACKEND": "channels_redis.core.RedisChannelLayer",
+#         "CONFIG": {
+#             "hosts": [('redis://default:UoYAGMensbhetMdhIiFsVwcNHoDPKvho@redis.railway.internal:6379')],
+#         },
+#     },
+# }
 
 ROOT_URLCONF = 'core.urls'
 
