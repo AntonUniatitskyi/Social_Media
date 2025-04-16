@@ -242,3 +242,6 @@ def post_data(request, post_id):
             for c in comments
         ]
     })
+
+def setting_page(request):
+    return render(request, 'social/settings_page.html')

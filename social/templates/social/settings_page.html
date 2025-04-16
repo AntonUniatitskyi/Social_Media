@@ -1,0 +1,53 @@
+{% extends 'social/base.html' %}
+
+{% block title %}
+    Налаштування
+{% endblock title %}
+
+{% block content %}
+<div class="max-w-md mx-auto mt-10 p-6 bg-white dark:bg-zinc-900 rounded-2xl shadow-xl space-y-6 text-center" x-data="{ modal_open: false }">
+
+    <h1 class="text-2xl font-semibold text-gray-800 dark:text-white">Налаштування профілю</h1>
+
+    <a href="{% url 'edit' %}" class="inline-block w-full text-center px-4 py-2 text-white bg-blue-600 hover:bg-blue-700 rounded-lg transition-all duration-200">
+        ✏️ Редагувати профіль
+    </a>
+
+    <button type="button"
+            @click="modal_open = true"
+            class="w-full px-4 py-2 text-red-600 border border-red-500 hover:bg-red-100 dark:hover:bg-red-900 dark:border-red-400 rounded-lg transition-all duration-200">
+        🚪 Вийти з акаунту
+    </button>
+
+    <!-- Модальное окно -->
+    <div x-show="modal_open" x-transition.opacity class="fixed inset-0 bg-black/50 z-40" @click.self="modal_open = false"></div>
+
+    <div x-show="modal_open" x-transition
+         class="fixed inset-0 z-50 flex min-h-full justify-center items-center p-6"
+         aria-modal="true">
+        <div @click.away="modal_open = false"
+             class="rounded-xl bg-white dark:bg-zinc-800 text-left shadow-xl p-6 max-w-md w-full">
+
+            <h1 class="text-xl font-bold text-gray-800 dark:text-white mb-4">Вийти з акаунту?</h1>
+            <p class="text-gray-600 dark:text-black-500 mb-6">Після виходу вам потрібно буде увійти знову.</p>
+
+            <form method="post" action="{% url 'logout' %}">
+                {% csrf_token %}
+                <div class="flex justify-end gap-2">
+                    <button type="submit"
+                            class="bg-red-600 text-white px-4 py-2 rounded-lg hover:bg-red-700 transition">
+                        Так, вийти
+                    </button>
+                    <button type="button"
+                            @click="modal_open = false"
+                            class="bg-gray-200 text-gray-800 px-4 py-2 rounded-lg hover:bg-gray-300 dark:bg-gray-700 dark:text-white dark:hover:bg-gray-600 transition">
+                        Скасувати
+                    </button>
+                </div>
+            </form>
+
+        </div>
+    </div>
+
+</div>
+{% endblock content %}

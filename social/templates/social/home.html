@@ -31,7 +31,7 @@
                                     <div class="swiper-pagination"></div>
                                 </div>
                             {% else %}
-                                <div style="color: #fff; text-align: center;">Без медиа</div>
+                                <div style="color: #fff; text-align: center;">Без медіа</div>
                             {% endif %}
                         </div>
                     </div>
@@ -39,14 +39,15 @@
                         <div class="post-header">
                             <div class="post-header-text">
                                 <div>
-                                    <img src="{{ publication.profile.get_avatar_url }}" alt="Аватар" class="post-author">
+                                    <img src="{{ publication.profile.get_avatar_url }}" alt="Аватар" class="w-10 h-10 rounded-full object-cover">
                                 </div>
                                 <div>
                                     {% if publication.profile.user.username == user.username %}
-                                        <strong><a href="{% url 'account' %}">{{ publication.profile.user.username }}</a></strong><br>
+                                        <strong><a href="{% url 'account' %}" style="display: block;">{{ publication.profile.user.username }}</a></strong>
                                     {% else %}
-                                        <strong><a href="{% url 'profile' publication.profile.user.username %}">{{ publication.profile.user.username }}</a></strong><br>
+                                        <strong><a href="{% url 'profile' publication.profile.user.username %}" style="display: block;">{{ publication.profile.user.username }}</a></strong>
                                     {% endif %}
+                                    <small style="color: #888; display: block; margin-top: -4px;">@ {{ publication.profile.uusername }}</small>
                                     <small style="color: #888;">{{ publication.timestamp|date:"d.m.Y H:i" }}</small>
                                 </div>
                             </div>
@@ -82,9 +83,13 @@
                             <!-- Форма комментария -->
                             <form method="post" action="{% url 'create_comment' %}" class="comment-form" style="display: flex; justify-content: space-between; align-items: center; flex-direction: column;">
                                 {% csrf_token %}
-                                <input type="hidden" name="publication_id" value="{{ publication.id }}">
-                                {{ form.text_com }}
-                                <button type="submit" class="btn subscribe-btn">Отправить</button>
+                                <div class="relative w-full" style="perspective: 500px;">
+                                    <input type="hidden" name="publication_id" value="{{ publication.id }}">
+                                    {{ form.text_com }}
+                                    <button type="submit" class="ml-2 absolute bottom-1.5 right-2">
+                                        <ion-icon name="paper-plane" class="h-5 w-5 mr-1 " style="transform: rotateX(25deg); transform-style: flat;"></ion-icon>
+                                    </button>
+                                </div>
                             </form>
                         </div>
                     </div>

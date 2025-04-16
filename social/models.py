@@ -6,7 +6,7 @@ from django.contrib.auth.models import User
 
 class Profile(models.Model):
     user = models.OneToOneField(User, on_delete=models.CASCADE)
-    uusername = models.CharField(blank=True, null=True, max_length=200, unique=True)
+    uusername = models.CharField(max_length=200, unique=True)
     bio = models.TextField(blank=True, null=True)
     avatar = models.ImageField(upload_to='avatars/', blank=True, null=True, default='avatars/default-avatar.png')
     followers = models.ManyToManyField(User, related_name='following_profiles', blank=True)
@@ -17,6 +17,11 @@ class Profile(models.Model):
     def is_following(self, target_user): return self.user in target_user.profile.followers.all()
     def publications_count(self):
         return self.publications.count()
+    
+    def save(self, *args, **kwargs):
+        if not self.uusername and self.user:
+            self.uusername = self.user.username.lower()
+        super().save(*args, **kwargs)
     
     def get_avatar_url(self):
         if self.avatar and hasattr(self.avatar, 'url'):

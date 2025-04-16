@@ -1,0 +1,42 @@
+<!-- Весь блок модалки -->
+<div x-data="{ modal_open: false }">
+    <!-- Визуальная "ссылка" для открытия модалки -->
+    <a role="button"
+       @click="modal_open = true"
+       class="text-red-600 hover:underline cursor-pointer">
+        Вийти з чату
+    </a>
+
+    <!-- Затемнение фона -->
+    <div x-show="modal_open" x-transition.opacity
+         class="fixed inset-0 bg-black/50 z-40"
+         @click.self="modal_open = false">
+    </div>
+
+    <!-- Модалка -->
+    <div x-show="modal_open" x-transition
+         class="fixed inset-0 z-50 flex min-h-full justify-center items-center p-6"
+         aria-modal="true">
+        <div @click.away="modal_open = false"
+             class="rounded-lg bg-white text-left shadow-xl p-6 max-w-md w-full">
+
+            <h1 class="text-xl font-bold mb-4">Покинути чат?</h1>
+
+            <form method="POST" action="{% url 'chatroom_leave' chat_group.group_name %}">
+                {% csrf_token %}
+                <div class="flex justify-end gap-2 mt-6">
+                    <button type="submit"
+                            class="bg-red-600 text-white px-4 py-2 rounded-lg hover:bg-red-700 transition">
+                        Так, вийти
+                    </button>
+                    <button type="button"
+                            @click="modal_open = false"
+                            class="bg-gray-300 text-black px-4 py-2 rounded-lg hover:bg-gray-400 transition">
+                        Скасувати
+                    </button>
+                </div>
+            </form>
+
+        </div>
+    </div>
+</div>

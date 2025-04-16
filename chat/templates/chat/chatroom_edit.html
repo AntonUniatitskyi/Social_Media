@@ -1,0 +1,46 @@
+{% extends 'social/base.html' %}
+
+{% block title %}
+    Налаштування чату
+{% endblock title %}
+
+{% block content %}
+<div class="max-w-3xl mx-auto bg-white p-8 rounded-2xl shadow-lg">
+    <h1 class="text-3xl font-bold text-gray-800 mb-6">Змінити чат</h1>
+    
+    <form method="post">
+        {% csrf_token %}
+        <div class="mb-6">
+            {{ form.group_chat_name }}
+        </div>
+
+        <div class="mb-6">
+            <h2 class="text-2xl font-semibold text-gray-700 mb-4">Учасники</h2>
+            
+            {% for member in chat_group.members.all %}
+            <div class="flex justify-between items-center py-3 border-b">
+                <div class="flex items-center gap-4">
+                    <img class="w-12 h-12 rounded-full object-cover" src="{{ member.profile.get_avatar_url }}" alt="{{ member.username }}">
+                    <div>
+                        <p class="font-semibold text-gray-800">{{ member.profile.name }}</p>
+                        <p class="text-sm text-gray-500">{{ member.username }}</p>
+                    </div>
+                </div>
+                
+                {% if member != chat_group.admin %}
+                <label class="inline-block">
+                    <input type="checkbox" name="remove_members" value="{{ member.id }}" class="appearance-none h-5 w-5 rounded-md border border-gray-300 checked:bg-red-500 checked:border-red-500 transition-all duration-150 cursor-pointer">
+                </label>
+                {% endif %}
+            </div>
+            {% endfor %}
+        </div>
+
+        <div class="flex justify-between items-center">
+            <button type="submit" class="px-6 py-2 bg-blue-600 hover:bg-blue-700 text-white rounded-xl transition-all">Оновити</button>
+            
+            <a href="{% url 'chatroom_delete' chat_group.group_name %}" class="text-sm text-red-400 hover:text-red-600 transition-all">Видалити чат</a>
+        </div>
+    </form>
+</div>
+{% endblock content %}
