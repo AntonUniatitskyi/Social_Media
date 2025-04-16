@@ -9,10 +9,13 @@
     <div id="chat_window" class="h-[45rem] flex flex-col  rounded-2xl shadow-2xl relative p-1">
         <div class="flex justify-center text-emerald-400  p-2 sticky top-0 z-10">
             {% if other_user %}
-                <div id="online-icon" class="rounded-full bg-red-500 p-1.5 absolute top-2 left-2"></div>
+                <a href="{% url 'chat_list' %}" class="absolute left-4 top-1/2 -translate-y-1/2"><ion-icon name="arrow-back" class="text-2xl text-black"></ion-icon></a>
                 <a href="{% url 'profile' other_user.username %}">
                     <div class="flex items-center gap-2 p-4 sticky top-0 z-10">
-                        <img class="w-10 h-10 rounded-full profile-image object-cover" src="{{ other_user.profile.get_avatar_url }}">
+                        <div class="flex items-center gap-1">
+                            <div id="online-icon" class="rounded-full bg-red-500 p-1.5 mt-1"></div>
+                            <img class="w-10 h-10 rounded-full profile-image object-cover" src="{{ other_user.profile.get_avatar_url }}">
+                        </div>
                         <div>
                             <span class="font-bold text-black">{{ other_user.username }}</span>
                             <span class="text-sm font-light text-gray-400">{{ other_user.profile.uusername }}</span>
@@ -20,12 +23,15 @@
                     </div>
                 </a>
             {% else %}
+            <a href="{% url 'chat_list' %}" class="absolute left-4 top-1/2 -translate-y-1/2"><ion-icon name="arrow-back" class="text-2xl text-black"></ion-icon></a>
+            <div class="flex items-center gap-1">
                 <div id="online-icon"></div>
                 <span id="online-count" class="pr-1"></span>online
+            </div>
             {% endif %}
         </div>
         <div id='chat_container' class="overflow-y-auto grow">
-            <ul id='chat_messages' class="flex flex-col justify-end gap-2 p-4">
+            <ul id='chat_messages' class="flex flex-col justify-end gap-2 px-0 py-1 ">
                 {% for message in chat_messages reversed %}
                     {% include 'chat/chat_message.html' %}
                 {% endfor %}

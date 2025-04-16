@@ -42,7 +42,8 @@ def chat_view(request, chatroom_name='public-chat'):
         'chat_messages': chat_messages,
         'form': form,
         'other_user': other_user,
-        'chatroom_name': chatroom_name
+        'chatroom_name': chatroom_name,
+        'hide_footer': True
     }
 
     return render(request, 'chat/chat.html', context)
@@ -52,19 +53,20 @@ def get_or_create_chatroom(request, username):
     if request.user.username == username:
         return redirect('chat_home')
     
-    other_user = User.objects.get(username = username)
-    my_chatrooms = request.user.chat_groups.filter(is_private = True)
+    other_user = User.objects.get(username=username)
+    my_chatrooms = request.user.chat_groups.filter(is_private=True)
 
-    if my_chatrooms.exists():
-        for chatroom in my_chatrooms:
-            if other_user in chatroom.members.all():
-                chatroom = chatroom
-                break
-            else:
-                chatroom = ChatGroup.objects.create(is_private = True)
-                chatroom.members.add(other_user, request.user)
+    existing_chat = None
+
+    for chatroom in my_chatrooms:
+        if other_user in chatroom.members.all():
+            existing_chat = chatroom
+            break
+
+    if existing_chat:
+        chatroom = existing_chat
     else:
-        chatroom = ChatGroup.objects.create(is_private = True)
-        chatroom.members.add(other_user, request.user)
+        chatroom = ChatGroup.objects.create(is_private=True)
+        chatroom.members.add(request.user, other_user)
 
     return redirect('chatroom', chatroom.group_name)

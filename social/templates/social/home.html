@@ -39,11 +39,7 @@
                         <div class="post-header">
                             <div class="post-header-text">
                                 <div>
-                                    {% if publication.profile.avatar %}
-                                        <img src="{{ publication.profile.avatar.url }}" alt="Аватар" class="post-author">
-                                    {% else %}
-                                        <img src="/media/avatars/default-avatar.png" alt="Аватар" class="post-author">
-                                    {% endif %}
+                                    <img src="{{ publication.profile.get_avatar_url }}" alt="Аватар" class="post-author">
                                 </div>
                                 <div>
                                     {% if publication.profile.user.username == user.username %}

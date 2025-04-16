@@ -1,6 +1,6 @@
 {% if message.author == user %}
-    <li class="flex justify-end mb-4">
-        <div class="bg-green-200 rounded-l-lg rounded-tr-lg px-4 py-2 max-w-[75%]">
+    <li class="flex justify-end w-full px-2 mb1">
+        <div class="bg-green-200 rounded-l-lg rounded-tr-lg px-2 py-1 max-w-[80%]">
             <span>{{ message.body }}</span>
         </div>
         <div class="flex items-end">
@@ -10,9 +10,9 @@
         </div>
     </li>
 {% else %}
-    <li>
+    <li class="w-full px-2 mb1">
         <div class="flex justify-start">
-            <div class="flex items-end mr-2" >
+            <div class="flex items-end" >
                 <a href="{% url 'profile' message.author.username %}">
                     <img class="w-8 h-8 rounded-full object-cover" src="/media/avatars/default-avatar.png">
                 </a>
@@ -22,11 +22,11 @@
                     <path fill="white" d="M2.8,13L8,13L8,0.2C7.1,5.5,6.5,8.7,1.7,10.4C-1.6,11.5,1,13,2.8,13z"></path>
                 </svg>
             </div>
-            <div class="bg-white px-4 py-2 max-w-[75%] rounded-r-lg rounded-tl-lg">
+            <div class="bg-white px-2 py-1 max-w-[80%] rounded-r-lg rounded-tl-lg">
                 <span>{{ message.body }}</span>
             </div>  
         </div>
-        <div class="text-sm font-light py-1 ml-10">
+        <div class="text-sm font-light py-1">
             <span class="text-black">{{ message.author.username }}</span> 
             <span class="text-gray-400">{{ message.author.profile.uusername }}</span>
         </div>

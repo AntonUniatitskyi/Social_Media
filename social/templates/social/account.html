@@ -7,11 +7,7 @@
     {% if user %}
         <div class="profile-header -ml-7" style="display: flex; align-items: center; gap: 10px;">
             <div class="profile-image">
-                {% if user.profile.avatar %}
-                    <img src="{{ user.profile.avatar.url }}" alt="Аватар" class="avatar-profile">
-                {% else %}
-                    <img src="/media/avatars/default-avatar.png" alt="Аватар по умолчанию" class="avatar-profile">
-                {% endif %}
+                <img src="{{ user.profile.get_avatar_url }}" alt="Аватар" class="avatar-profile">
             </div>
             <div class="profile-info">
                 <h2 style="font-size: 28px;">{{ user.username }}</h2>
