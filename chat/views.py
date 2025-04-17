@@ -49,7 +49,8 @@ def chat_view(request, chatroom_name='public-chat'):
         'other_user': other_user,
         'chatroom_name': chatroom_name,
         'chat_group': chat_group,
-        'hide_footer': True
+        'hide_footer': True,
+        'hide_header': True
     }
 
     return render(request, 'chat/chat.html', context)

@@ -62,90 +62,91 @@
             }, 4000);
         </script>
     {% endif %}
-
-    <header class="w-full border-b py-3 px-4 md:px-8">
-        <div class="flex flex-col md:flex-row items-center justify-between gap-3">
-            <!-- Логотип + Название + Аватарка (мобильный view: вместе) -->
-            <div class="flex w-full md:w-auto items-center justify-between">
-                <div class="flex items-center gap-1 -ml-3">
-                    <img src="/media/avatars/logo.png" alt="Logo" class="h-10 w-auto">
-                    <a href="{% url 'home' %}" class="text-2xl font-semibold text-gray-800" style="font-family: 'Pacifico', cursive;">
-                      Roon</a>
+    {% if not hide_header %}
+        <header class="w-full border-b py-3 px-4 md:px-8">
+            <div class="flex flex-col md:flex-row items-center justify-between gap-3">
+                <!-- Логотип + Название + Аватарка (мобильный view: вместе) -->
+                <div class="flex w-full md:w-auto items-center justify-between">
+                    <div class="flex items-center gap-1 -ml-3">
+                        <img src="/media/avatars/logo.png" alt="Logo" class="h-10 w-auto">
+                        <a href="{% url 'home' %}" class="text-2xl font-semibold text-gray-800" style="font-family: 'Pacifico', cursive;">
+                        Roon</a>
+                    </div>
+    
+                    <!-- Аватар справа на мобилке -->
+                    <div class="md:hidden">
+                        {% if user.is_authenticated %}
+                            {% if user.profile.avatar %}
+                                <a href="{% url 'account' %}">
+                                <img src="{{ user.profile.avatar.url }}" class="h-10 w-10 rounded-full object-cover" alt="Avatar">
+                                </a>
+                            {% else %}
+                                <a href="{% url 'account' %}">
+                                <img src="/media/avatars/default-avatar.png" class="h-10 w-10 rounded-full object-cover" alt="Default Avatar">
+                                </a>
+                            {% endif %}
+                        {% else %}
+                            <a href="{% url 'login' %}" class="px-3 py-1 border border-gray-400 rounded text-sm text-gray-700 hover:bg-gray-100">
+                                Увійти
+                            </a>
+                        {% endif %}
+                    </div>
                 </div>
-  
-                <!-- Аватар справа на мобилке -->
-                <div class="md:hidden">
+    
+                <!-- Навигация -->
+                <nav class="flex gap-6 text-xl text-gray-700">
+                    <a href="{% url 'home' %}">
+                        {% if request.resolver_match.url_name == 'home' %}
+                            <ion-icon name="home" class="text-2xl"></ion-icon>
+                        {% else %}
+                            <ion-icon name="home-outline" class="text-2xl"></ion-icon>
+                        {% endif %}
+                    </a>
+                    <a href="{% url 'publ_add' %}">
+                        {% if request.resolver_match.url_name == 'publ_add' %}
+                            <ion-icon name="add-circle" class="text-2xl"></ion-icon>
+                        {% else %}
+                            <ion-icon name="add-circle-outline" class="text-2xl"></ion-icon>
+                        {% endif %}
+                    </a>
+                    <a href="{% url 'chat_list' %}">
+                        {% if request.resolver_match.url_name == 'chat_list' %}
+                            <ion-icon name="chatbubbles" class="text-2xl"></ion-icon>
+                        {% else %}
+                            <ion-icon name="chatbubbles-outline" class="text-2xl"></ion-icon>
+                            
+                        {% endif %}
+                    </a>
+                    <a href="{% url 'search' %}">
+                        {% if request.resolver_match.url_name == 'search' %}
+                            <ion-icon name="search" class="text-2xl"></ion-icon>
+                        {% else %}
+                            <ion-icon name="search-outline" class="text-2xl"></ion-icon>
+                        {% endif %}
+                    </a>
+                </nav>
+    
+                <!-- Аватар справа на больших экранах -->
+                <div class="hidden md:block">
                     {% if user.is_authenticated %}
                         {% if user.profile.avatar %}
                             <a href="{% url 'account' %}">
-                            <img src="{{ user.profile.avatar.url }}" class="h-10 w-10 rounded-full object-cover" alt="Avatar">
+                                <img src="{{ user.profile.avatar.url }}" class="h-10 w-10 rounded-full object-cover" alt="Avatar">
                             </a>
                         {% else %}
                             <a href="{% url 'account' %}">
-                            <img src="/media/avatars/default-avatar.png" class="h-10 w-10 rounded-full object-cover" alt="Default Avatar">
+                                <img src="/media/avatars/default-avatar.png" class="h-10 w-10 rounded-full object-cover" alt="Default Avatar">
                             </a>
                         {% endif %}
                     {% else %}
-                        <a href="{% url 'login' %}" class="px-3 py-1 border border-gray-400 rounded text-sm text-gray-700 hover:bg-gray-100">
-                            Увійти
+                        <a href="{% url 'login' %}" class="px-4 py-2 border border-gray-400 rounded-lg text-sm text-gray-700 hover:bg-gray-100">
+                        Увійти
                         </a>
                     {% endif %}
                 </div>
             </div>
-  
-            <!-- Навигация -->
-            <nav class="flex gap-6 text-xl text-gray-700">
-                <a href="{% url 'home' %}">
-                    {% if request.resolver_match.url_name == 'home' %}
-                        <ion-icon name="home" class="text-2xl"></ion-icon>
-                    {% else %}
-                        <ion-icon name="home-outline" class="text-2xl"></ion-icon>
-                    {% endif %}
-                </a>
-                <a href="{% url 'publ_add' %}">
-                    {% if request.resolver_match.url_name == 'publ_add' %}
-                        <ion-icon name="add-circle" class="text-2xl"></ion-icon>
-                    {% else %}
-                        <ion-icon name="add-circle-outline" class="text-2xl"></ion-icon>
-                    {% endif %}
-                </a>
-                <a href="{% url 'chat_list' %}">
-                    {% if request.resolver_match.url_name == 'chat_list' %}
-                        <ion-icon name="chatbubbles" class="text-2xl"></ion-icon>
-                    {% else %}
-                        <ion-icon name="chatbubbles-outline" class="text-2xl"></ion-icon>
-                        
-                    {% endif %}
-                </a>
-                <a href="{% url 'search' %}">
-                    {% if request.resolver_match.url_name == 'search' %}
-                        <ion-icon name="search" class="text-2xl"></ion-icon>
-                    {% else %}
-                        <ion-icon name="search-outline" class="text-2xl"></ion-icon>
-                    {% endif %}
-                </a>
-            </nav>
-  
-            <!-- Аватар справа на больших экранах -->
-            <div class="hidden md:block">
-                {% if user.is_authenticated %}
-                    {% if user.profile.avatar %}
-                        <a href="{% url 'account' %}">
-                            <img src="{{ user.profile.avatar.url }}" class="h-10 w-10 rounded-full object-cover" alt="Avatar">
-                        </a>
-                    {% else %}
-                        <a href="{% url 'account' %}">
-                            <img src="/media/avatars/default-avatar.png" class="h-10 w-10 rounded-full object-cover" alt="Default Avatar">
-                        </a>
-                    {% endif %}
-                {% else %}
-                    <a href="{% url 'login' %}" class="px-4 py-2 border border-gray-400 rounded-lg text-sm text-gray-700 hover:bg-gray-100">
-                    Увійти
-                    </a>
-                {% endif %}
-            </div>
-        </div>
-    </header>
+        </header>
+    {% endif %}
   
 
 <div class="container flex-grow-1">

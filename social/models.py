@@ -1,12 +1,13 @@
 from django.db import models
 from django.contrib.auth.models import User
+from django.core.exceptions import ValidationError
 
 # Create your models here.
 
 
 class Profile(models.Model):
     user = models.OneToOneField(User, on_delete=models.CASCADE)
-    uusername = models.CharField(max_length=200, unique=True)
+    uusername = models.CharField(max_length=200, unique=True, null=False, blank=False)
     bio = models.TextField(blank=True, null=True)
     avatar = models.ImageField(upload_to='avatars/', blank=True, null=True, default='avatars/default-avatar.png')
     followers = models.ManyToManyField(User, related_name='following_profiles', blank=True)
@@ -30,7 +31,6 @@ class Profile(models.Model):
 
 class Publication(models.Model):
     profile = models.ForeignKey(Profile, on_delete=models.CASCADE, related_name='publications')
-    # media = models.FileField(upload_to='publications/', blank=True, null=True)
     likes = models.ManyToManyField(User, related_name='liked_publications', blank=True)
     timestamp = models.DateTimeField(auto_now_add=True)
     text = models.TextField(blank=True, null=True)
@@ -53,7 +53,7 @@ class Comment(models.Model):
     
 
 class MediaItem(models.Model):
-    publication = models.ForeignKey(Publication, on_delete=models.CASCADE, related_name='media_items')
+    publication = models.ForeignKey(Publication, on_delete=models.CASCADE, related_name='media_items', null=False, blank=False)
     file = models.FileField(upload_to='publications/')
 
     def is_image(self):

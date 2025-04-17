@@ -29,6 +29,9 @@ class PublicationForm(forms.ModelForm):
                 'placeholder': 'Підпис'
             }),
         }
+    def __init__(self, *args, **kwargs):
+        self.files = kwargs.pop('files', None)
+        super().__init__(*args, **kwargs)
 
 class ProfileForm(forms.ModelForm):
     class Meta:

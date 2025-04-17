@@ -57,19 +57,28 @@ class PublicationCreateView(LoginRequiredMixin, CreateView):
     template_name = 'social/create_publicate.html'
 
     def form_valid(self, form):
+        files = self.request.FILES.getlist('media')
+
+        if not files:
+            form.add_error(None, 'Потрібно додати хоча б один файл медіа.')
+            return self.form_invalid(form)
+
+        if len(files) > 10:
+            form.add_error(None, 'Максимум 10 файлів.')
+            return self.form_invalid(form)
+
         publication = form.save(commit=False)
         publication.profile = self.request.user.profile
         publication.save()
 
-        files = self.request.FILES.getlist('media')
-        if len(files) > 10:
-            form.add_error(None, 'Максимум 10 файлов')
-            return self.form_invalid(form)
-
         for file in files[:10]:
             models.MediaItem.objects.create(publication=publication, file=file)
 
+        messages.success(self.request, "Публікацію створено!")
         return redirect('home')
+    
+    def form_invalid(self, form):
+        return self.render_to_response(self.get_context_data(form=form))
 
 class ProfileUpdateView(LoginRequiredMixin, View):
     def get(self, request):
