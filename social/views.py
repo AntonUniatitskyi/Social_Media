@@ -1,22 +1,22 @@
-from django.shortcuts import render, redirect, get_object_or_404
-from django.contrib import messages
 from random import shuffle
-from django.views.decorators.csrf import csrf_exempt
-from django.db import IntegrityError
-from .forms import UserForm, ProfileForm, UserPasswordForm, UserEditForm, PublicationForm, CommentForm
-import core.settings
-from django.http import HttpResponseRedirect
-from django.contrib.auth.models import User, Group
-from django.views.generic import DetailView, ListView, View, CreateView
-from django.contrib.auth.mixins import LoginRequiredMixin
-from django.db.models import Q
-from django.contrib.auth.decorators import login_required
-from django.views.decorators.http import require_POST
+
+from django.contrib import messages
 from django.contrib.auth import login
-from . import models
+from django.contrib.auth.decorators import login_required
+from django.contrib.auth.mixins import LoginRequiredMixin
+from django.contrib.auth.models import Group, User
+from django.db import IntegrityError
+from django.db.models import Q
 from django.http import JsonResponse
-import json
+from django.shortcuts import get_object_or_404, redirect, render
+from django.views.decorators.http import require_POST
+from django.views.generic import CreateView, DetailView, ListView, View
+
+import core.settings
 from chat.models import ChatInvitation
+
+from . import models
+from .forms import CommentForm, ProfileForm, PublicationForm, UserEditForm, UserForm
 
 # Create your views here.
 

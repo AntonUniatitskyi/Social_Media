@@ -11,7 +11,7 @@ urlpatterns = [
     path('chatroom-delete/<chatroom_name>', chatroom_delete_view ,name='chatroom_delete'),
     path('chatroom-leave/<chatroom_name>', chatroom_leave_view, name='chatroom_leave'),
     path('chat/favorites/', favorites_chat_view, name='favorites_chat'),
-    # path('invite/', send_invite_view, name='send_invite')
     path('chat/invites/<int:invite_id>/<str:action>/', handle_invite_view, name='respond_to_invite'),
+    path('chat/fileupload/<chatroom_name>', chat_file_upload, name='chat_file_upload')
 
 ]

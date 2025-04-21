@@ -76,7 +76,7 @@
         </div>
         
         <div class="sticky bottom-0 z-10 p-2 bg-white border-t border-gray-200">
-            <div class="flex items-center rounded-xl px-2 py-2">
+            <div class="flex flex-col gap-3 items-center rounded-xl px-2 py-2">
                 <form id="chat_message_form" class="w-full"
                 hx-ext="ws"
                 ws-connect="/ws/chatroom/{{ chatroom_name }}"
@@ -90,27 +90,54 @@
                         </button>
                     </div>
                 </form>
+                <form id="chat_file_form"
+                    enctype="multipart/form-data"
+                    hx-post="{% url 'chat_file_upload' chat_group.group_name %}"
+                    hx-target="#chat_messages"
+                    hx-swap="beforeend"
+                    _="on htmx:beforeSend reset() me"
+                    class="flex flex-col sm:flex-row items-center gap-3 p-3 w-full rounded-2xl bg-white shadow-sm dark:bg-gray-800">
+
+                    {% csrf_token %}
+
+                    <input type="file"
+                        name="file"
+                        id="id_file"
+                        class="block w-full text-sm text-gray-500
+                                file:mr-4 file:py-2 file:px-4
+                                file:rounded-xl file:border-0
+                                file:text-sm file:font-semibold
+                                file:bg-blue-50 file:text-blue-700
+                                hover:file:bg-blue-100
+                                transition bg-transparent border-none outline-none
+                                file:bg-transparent" />
+
+                    <button type="submit"
+                            class="px-4 py-2 bg-blue-600 hover:bg-blue-700 text-white text-sm rounded-xl shadow transition-all">
+                        Зберегти
+                    </button>
+                </form>
             </div>
         </div>
     </div>
-
+    
     {% if chat_group.members.exists and chat_group.is_private == False %}
-        <a href="{% url 'chatroom_leave' chat_group.group_name %}">
+    <a href="{% url 'chatroom_leave' chat_group.group_name %}">
             {% include 'chat/partials/modal_chat_leave.html' %}
         </a>
     {% endif %}
 </wrapper>
 
 <script>
-    function scrollToBottom() {
-        const container = document.getElementById('chat_container');
-        if (container) {
-            container.scrollTop = container.scrollHeight;
-        }
+    function scrollToBottom(time=0) {
+        setTimeout(function() {
+            const container = document.getElementById('chat_container');
+            if (container) {
+                container.scrollTop = container.scrollHeight;
+            }
+        }, time);
     }
-
-    // Скроллим при загрузке
+    
     scrollToBottom();
 </script>
-
 {% endblock content %}

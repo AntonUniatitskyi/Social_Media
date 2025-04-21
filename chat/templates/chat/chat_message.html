@@ -1,7 +1,7 @@
 {% if message.author == user %}
     <li class="flex justify-end w-full px-2 mb1">
         <div class="bg-green-200 rounded-l-lg rounded-tr-lg px-2 py-1 max-w-[80%]">
-            <span>{{ message.body }}</span>
+            {% include 'chat/partials/message_content.html' %}
         </div>
         <div class="flex items-end">
             <svg height="13" width="8" >
@@ -23,7 +23,7 @@
                 </svg>
             </div>
             <div class="bg-white px-2 py-1 max-w-[80%] rounded-r-lg rounded-tl-lg">
-                <span>{{ message.body }}</span>
+                {% include 'chat/partials/message_content.html' %}
             </div>  
         </div>
         {% if chat_group.is_private == False %}
