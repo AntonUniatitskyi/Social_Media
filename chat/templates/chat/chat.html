@@ -32,12 +32,15 @@
                             <img class="w-10 h-10 rounded-full profile-image object-cover" src="{{ other_user.profile.get_avatar_url }}">
                         </div>
                         <div>
-                            <span class="font-bold text-black">{{ other_user.username }}</span>
-                            <span class="text-sm font-light text-gray-400">@ {{ other_user.profile.uusername }}</span>
+                            {% if chat_group.is_private == False %}
+                                <span class="font-bold text-black">{{ other_user.username }}</span>
+                                <span class="text-sm font-light text-gray-400">@ {{ other_user.profile.uusername }}</span>
+                            {% endif %}
                         </div>
                     </div>
                 </a>
             {% elif chat_group.group_chat_name %}
+                <a href="{% url 'chat_list' %}" class="absolute left-4 top-1/2 -translate-y-1/2"><ion-icon name="arrow-back" class="text-2xl text-black"></ion-icon></a>
                 <ul id="groupchat-members" class="flex gap-4 flex-wrap justify-start">
                     {% for member in chat_group.members.all %}
                         <li class="flex justify-center items-center gap-2">
@@ -91,7 +94,7 @@
         </div>
     </div>
 
-    {% if chat_group.members.exists %}
+    {% if chat_group.members.exists and chat_group.is_private == False %}
         <a href="{% url 'chatroom_leave' chat_group.group_name %}">
             {% include 'chat/partials/modal_chat_leave.html' %}
         </a>

@@ -48,7 +48,7 @@ class Publication(models.Model):
 class Comment(models.Model):
     publication = models.ForeignKey(Publication, on_delete=models.CASCADE, related_name='comments')
     user = models.ForeignKey(Profile, on_delete=models.CASCADE, related_name='user_comment')
-    text_com = models.TextField(blank=True, null=True)
+    text_com = models.TextField(null=False)
     created_at = models.DateTimeField(auto_now_add=True)
     
 
@@ -61,3 +61,14 @@ class MediaItem(models.Model):
 
     def is_video(self):
         return self.file.name.lower().endswith(('.mp4', '.mov', '.avi', '.mkv'))
+    
+
+class Notification(models.Model):
+    recipient = models.ForeignKey(User, on_delete=models.CASCADE, related_name='notifications')
+    sender = models.ForeignKey(User, on_delete=models.CASCADE)
+    message = models.CharField(max_length=255)
+    is_read = models.BooleanField(default=False)
+    created_at = models.DateTimeField(auto_now_add=True)
+
+    def __str__(self):
+        return f"Уведомление для {self.recipient.username} от {self.sender.username}"

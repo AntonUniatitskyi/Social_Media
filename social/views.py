@@ -1,5 +1,6 @@
 from django.shortcuts import render, redirect, get_object_or_404
 from django.contrib import messages
+from random import shuffle
 from django.views.decorators.csrf import csrf_exempt
 from django.db import IntegrityError
 from .forms import UserForm, ProfileForm, UserPasswordForm, UserEditForm, PublicationForm, CommentForm
@@ -15,13 +16,16 @@ from django.contrib.auth import login
 from . import models
 from django.http import JsonResponse
 import json
+from chat.models import ChatInvitation
 
 # Create your views here.
 
-
-
-def home(request):
-    return render(request, 'social/home.html')
+def notification(request):
+    user = request.user
+    invites = ChatInvitation.objects.filter(to_user=user, accepted=None)
+    notifications = request.user.notifications.order_by('-created_at')
+    notifications.filter(is_read=False).update(is_read=True)
+    return render(request, 'social/notification.html', {'invites': invites, 'notifications': notifications})
 
 class CommentCreateView(LoginRequiredMixin, CreateView):
     model = models.Comment
@@ -37,6 +41,14 @@ class CommentCreateView(LoginRequiredMixin, CreateView):
         comment.publication = publication
         comment.save()
 
+        target_user = publication.profile.user
+
+        models.Notification.objects.create(
+                recipient=target_user,
+                sender=self.request.user,
+                message=f"{self.request.user.username} залишив коментар до вашої публікації"
+            )
+        
         return JsonResponse({
             'success': True,
             'username': comment.user.user.username,
@@ -44,10 +56,6 @@ class CommentCreateView(LoginRequiredMixin, CreateView):
             'timestamp': comment.created_at.strftime('%d.%m.%Y %H:%M'),
             'publication_id': publication.id
         })
-
-    #     return HttpResponseRedirect(self.get_success_url())
-    # def get_success_url(self):
-    #     return self.request.META.get('HTTP_REFERER', '/')
     def form_invalid(self, form):
         return JsonResponse({'success': False, 'errors': form.errors}, status=400)
 
@@ -152,10 +160,19 @@ class HomeView(LoginRequiredMixin, ListView):
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)
         user = self.request.user
+        invites = ChatInvitation.objects.filter(to_user=self.request.user, accepted=None)
         if user.is_authenticated:
             for pub in context['home']:
                 pub.liked_by_user = pub.is_liked_by(user)
         context['form'] = CommentForm()
+        context['followers'] = user.profile.followers.all()
+        context['following'] = User.objects.filter(profile__followers=user)
+        context['recomended'] = User.objects.exclude(profile__followers=user).exclude(id=user.id)
+        recommended_list = list(context['recomended'])
+        shuffle(recommended_list)
+        context['recomended'] = recommended_list
+        context['invites'] = invites
+
         return context
 
 @require_POST
@@ -186,6 +203,12 @@ def follow(request, username):
         profile.followers.remove(request.user)  # Відписка
     else:
         profile.followers.add(request.user)  # Підписка
+
+        models.Notification.objects.create(
+            recipient=target_user,
+            sender=request.user,
+            message=f"{request.user.username} підписався(лась) на вас"
+        )
 
     return redirect('profile', username=target_user.username)
 
@@ -254,3 +277,10 @@ def post_data(request, post_id):
 
 def setting_page(request):
     return render(request, 'social/settings_page.html')
+
+
+def base_context(request):
+    unread_count = 0
+    if request.user.is_authenticated:
+        unread_count = request.user.notifications.filter(is_read=False).count()
+    return {'unread_notifications': unread_count}

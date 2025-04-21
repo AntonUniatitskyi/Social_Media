@@ -25,3 +25,13 @@ class GroupMessage(models.Model):
     
     class Meta:
         ordering = ['-created']
+
+class ChatInvitation(models.Model):
+    from_user = models.ForeignKey(User, related_name='sent_invites', on_delete=models.CASCADE)
+    to_user = models.ForeignKey(User, related_name='received_invites', on_delete=models.CASCADE)
+    chat_group = models.ForeignKey(ChatGroup, on_delete=models.CASCADE)
+    timestamp = models.DateTimeField(auto_now_add=True)
+    accepted = models.BooleanField(null=True)
+
+    class Meta:
+        unique_together = ('to_user', 'chat_group')

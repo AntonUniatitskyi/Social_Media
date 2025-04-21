@@ -42,3 +42,22 @@ class ChatRoomEditForm(ModelForm):
                 'maxlength': '300'
             })
         }
+
+class InviteUserForm(forms.Form):
+    def __init__(self, *args, chat_group=None, **kwargs):
+        super().__init__(*args, **kwargs)
+        if chat_group:
+            self.fields['user'].queryset = User.objects.filter(
+                is_active=True
+            ).exclude(
+                id__in=chat_group.members.values_list('id', flat=True)
+            ).exclude(
+                id=chat_group.admin_id
+            )
+    user = forms.ModelChoiceField(
+        queryset=User.objects.none(),
+        label="Оберіть користувача",
+        widget=forms.Select(attrs={
+            "class": "mt-1 block w-full h-10 rounded-xl border-gray-300 shadow-sm focus:border-indigo-500 focus:ring focus:ring-indigo-200 focus:ring-opacity-50 text-sm",
+        })
+    )

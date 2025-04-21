@@ -6,111 +6,264 @@
 
 {% block content %}
 
-<div class="profile-container profile-acc">
-    {% if home %}
-        <div class="posts-list">
-            {% for publication in home %}
-                <div class="post-page-container" data-publication-id="{{ publication.id }}">
-                    <div class="post-media">
-                        <div class="media_container">
-                            {% if publication.media_items.all %}
-                                <div class="swiper swiper-{{ publication.id }}">
-                                    <div class="swiper-wrapper">
-                                        {% for media in publication.media_items.all %}
-                                            <div class="swiper-slide">
-                                                {% if media.is_image %}
-                                                    <img src="{{ media.file.url }}" alt="Публикация" style="max-height: 80vh; max-width: 100%; object-fit: contain;">
-                                                {% elif media.is_video %}
-                                                    <video src="{{ media.file.url }}" controls style="max-height: 80vh; max-width: 100%;"></video>
-                                                {% endif %}
-                                            </div>
-                                        {% endfor %}
+<div class="flex flex-col xl:flex-row gap-4 px-2 sm:px-4">
+
+    <div class="hidden xl:block w-1/5 mt-3 mb-10 pl-3 pt-3 pb-20 overflow-y-auto sticky top-10 bg-white rounded-2xl border border-gray-300 shadow-xl max-h-[calc(100vh-85px)]">
+        <div class="container">
+            <!-- Favorites Section -->
+            <a href="{% url 'favorites_chat' %}"
+               class="flex items-center gap-3 px-4 py-3 text-sm font-medium text-gray-800 bg-yellow-50 hover:bg-yellow-100 rounded-xl transition-all duration-200 mb-6 shadow-sm">
+                <span class="text-yellow-500 text-xl">⭐</span>
+                <span class="font-semibold">Вибране</span>
+            </a>
+    
+            <h2 class="text-xl font-bold mb-4 text-gray-800">📩 Запрошення до груп</h2>
+    
+            {% if invites %}
+                <ul class="space-y-6">
+                    {% for invite in invites %}
+                        {% if invite.accepted is None %}
+                            <li class="bg-gradient-to-br from-white via-blue-50 to-white p-2 rounded-2xl border border-gray-200 shadow-md hover:shadow-xl transition duration-300">
+                                <div class="flex items-start gap-2">
+                                    <div class="flex-1">
+                                        <p class="text-sm text-gray-700 leading-relaxed">
+                                            <span class="font-semibold text-gray-900">{{ invite.from_user.username }}</span>
+                                            запросив тебе у групу
+                                            <span class="font-semibold text-blue-600">{{ invite.chat_group.group_chat_name }}</span>.
+                                        </p>
+                                        <div class="mt-2 flex gap-1 flex-col">
+                                            <a href="{% url 'respond_to_invite' invite.id 'accept' %}"
+                                               class="flex items-center gap-2 px-4 py-2 text-sm font-semibold bg-green-500 text-white rounded-xl hover:bg-green-600 transition shadow">
+                                                ✅ Прийняти
+                                            </a>
+                                            <a href="{% url 'respond_to_invite' invite.id 'reject' %}"
+                                               class="flex items-center gap-2 px-4 py-2 text-sm font-semibold bg-red-500 text-white rounded-xl hover:bg-red-600 transition shadow">
+                                                ❌ Відхилити
+                                            </a>
+                                        </div>
                                     </div>
-                                    <div class="swiper-button-next"></div>
-                                    <div class="swiper-button-prev"></div>
-                                    <div class="swiper-pagination"></div>
                                 </div>
-                            {% else %}
-                                <div style="color: #fff; text-align: center;">Без медіа</div>
-                            {% endif %}
+                            </li>
+                        {% endif %}
+                    {% endfor %}
+                </ul>
+            {% else %}
+                <div class="text-center text-gray-500 py-8">
+                    <p class="text-sm">🔕 Немає нових запрошень.</p>
+                </div>
+            {% endif %}
+        </div>
+    </div>
+    
+
+    <div class="w-full xl:w-3/5 max-w-full mx-auto px-2 sm:px-4 profile-container profile-acc">
+        {% if home %}
+            <div class="posts-list">
+                {% for publication in home %}
+                    <div class="post-page-container" data-publication-id="{{ publication.id }}">
+                        <div class="post-media">
+                            <div class="media_container mx-auto max-w-[300px] w-full px-4">
+                                {% if publication.media_items.all %}
+                                    <div class="swiper swiper-{{ publication.id }} w-full">
+                                        <div class="swiper-wrapper">
+                                            {% for media in publication.media_items.all %}
+                                                <div class="swiper-slide">
+                                                    {% if media.is_image %}
+                                                        <img src="{{ media.file.url }}" class="w-full max-h-[80vh] object-contain rounded-[10px]" alt="Публикация">
+                                                    {% elif media.is_video %}
+                                                        <video src="{{ media.file.url }}" controls class="w-full max-h-[80vh] object-contain rounded-[10px]"></video>
+                                                    {% endif %}
+                                                </div>
+                                            {% endfor %}
+                                        </div>
+                                        <div class="swiper-button-next"></div>
+                                        <div class="swiper-button-prev"></div>
+                                        <div class="swiper-pagination"></div>
+                                    </div>
+                                {% else %}
+                                    <div style="color: #fff; text-align: center;">Без медіа</div>
+                                {% endif %}
+                            </div>
+                        </div>                    
+                        <div class="post-details">
+                            <div class="post-header">
+                                <div class="post-header-text">
+                                    <div>
+                                        <img src="{{ publication.profile.get_avatar_url }}" alt="Аватар" class="w-10 h-10 rounded-full object-cover">
+                                    </div>
+                                    <div>
+                                        {% if publication.profile.user.username == user.username %}
+                                            <strong><a href="{% url 'account' %}" style="display: block;">{{ publication.profile.user.username }}</a></strong>
+                                        {% else %}
+                                            <strong><a href="{% url 'profile' publication.profile.user.username %}" style="display: block;">{{ publication.profile.user.username }}</a></strong>
+                                        {% endif %}
+                                        <small style="color: #888; display: block; margin-top: -4px;">@ {{ publication.profile.uusername }}</small>
+                                        <small style="color: #888;">{{ publication.timestamp|date:"d.m.Y H:i" }}</small>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <div class="post-comments comment-block" data-publication-id="{{ publication.id }}" style="max-height: 250px; overflow-y: auto; padding-right: 10px;">
+                                {% for comment in publication.comments.all %}
+                                    <div style="margin-bottom: 15px;">
+                                        <strong>{{ comment.user.user.username }}</strong>: {{ comment.text_com }}
+                                        <small style="color: #888; display: block;">{{ comment.created_at|date:"d.m.Y H:i" }}</small>
+                                    </div>
+                                {% empty %}
+                                    <p style="color: #666;">Коментарів нема</p>
+                                {% endfor %}
+                            </div>
+
+                            <div class="post-actions">
+                                <div style="margin-bottom: 10px;">
+                                    <!-- Форма лайка -->
+                                    <form method="post" action="{% url 'like_publ' publication.id %}" data-publication-id="{{ publication.id }}" class="like-form" style="display: inline;">
+                                        {% csrf_token %}
+                                        <div class="flex flex-row">
+                                            <button type="submit" class="btn p-0 like">
+                                                {% if publication.liked_by_user %}
+                                                    <ion-icon name="paw" style="font-size: 24px; color: red;"></ion-icon>
+                                                {% else %}
+                                                    <ion-icon name="paw-outline" style="font-size: 24px;"></ion-icon>
+                                                {% endif %}
+                                            </button>
+                                            <p class="like-count ml-2">{{ publication.likes_count }}</p>
+                                        </div>
+                                    </form>
+                                    <hr>
+                                </div>
+                                <!-- Форма комментария -->
+                                <form method="post" action="{% url 'create_comment' %}" class="comment-form" style="display: flex; justify-content: space-between; align-items: center; flex-direction: column;">
+                                    {% csrf_token %}
+                                    <div class="relative w-full" style="perspective: 500px;">
+                                        <input type="hidden" name="publication_id" value="{{ publication.id }}">
+                                        {{ form.text_com }}
+                                        <button type="submit" class="ml-2 absolute bottom-1.5 right-2">
+                                            <ion-icon name="paper-plane" class="h-5 w-5 mr-1 " style="transform: rotateX(25deg); transform-style: flat;"></ion-icon>
+                                        </button>
+                                    </div>
+                                </form>
+                            </div>
                         </div>
                     </div>
-                    <div class="post-details">
-                        <div class="post-header">
-                            <div class="post-header-text">
-                                <div>
-                                    <img src="{{ publication.profile.get_avatar_url }}" alt="Аватар" class="w-10 h-10 rounded-full object-cover">
-                                </div>
-                                <div>
-                                    {% if publication.profile.user.username == user.username %}
-                                        <strong><a href="{% url 'account' %}" style="display: block;">{{ publication.profile.user.username }}</a></strong>
-                                    {% else %}
-                                        <strong><a href="{% url 'profile' publication.profile.user.username %}" style="display: block;">{{ publication.profile.user.username }}</a></strong>
-                                    {% endif %}
-                                    <small style="color: #888; display: block; margin-top: -4px;">@ {{ publication.profile.uusername }}</small>
-                                    <small style="color: #888;">{{ publication.timestamp|date:"d.m.Y H:i" }}</small>
-                                </div>
-                            </div>
-                        </div>
+                    <hr>
+                {% endfor %}
+            </div>
+        {% else %}
+            <div class="no-posts">
+                <p style="font-size: 18px;">Нет новых публикаций</p>
+            </div>
+        {% endif %}
+    </div>
 
-                        <div class="post-comments comment-block" data-publication-id="{{ publication.id }}" style="max-height: 250px; overflow-y: auto; padding-right: 10px;">
-                            {% for comment in publication.comments.all %}
-                                <div style="margin-bottom: 15px;">
-                                    <strong>{{ comment.user.user.username }}</strong>: {{ comment.text_com }}
-                                    <small style="color: #888; display: block;">{{ comment.created_at|date:"d.m.Y H:i" }}</small>
-                                </div>
-                            {% empty %}
-                                <p style="color: #666;">Комментариев нет</p>
-                            {% endfor %}
-                        </div>
+    <div class="hidden xl:block w-1/5 mt-3 mb-10 pl-3 pt-3 pb-20 overflow-y-auto sticky top-10 bg-white rounded-lg border border-gray-300 shadow-lg max-h-[calc(100vh-85px)]">
+        <!-- Profile Section -->
+        <p class="text-center mb-4 font-semibold text-lg text-gray-800">-- Профіль --</p>
+        <div class="post-header-text flex items-center mb-4">
+            <img src="{{ user.profile.get_avatar_url }}" alt="Аватар" class="w-16 h-16 rounded-full object-cover">
+            <div class="ml-4">
+                <strong class="text-lg">{{ user.username }}</strong>
+                <small class="text-gray-600">@ {{ user.profile.uusername }}</small>
+            </div>
+        </div>
+        <small class="text-right ml-auto mr-3 text-blue-700 text-sm">
+            <a href="{% url 'account' %}">Перейти в профіль</a>
+        </small>
+        <hr class="mt-4 mb-4 mr-3 bg-gray-300">
+    
+        <!-- Info Section -->
+        <p class="text-center mb-4 font-semibold text-lg text-gray-800">-- Інфо --</p>
+        <div class="flex flex-row mb-4">
+            <button type="button" class="bg-blue-500 text-white py-2 px-3 rounded-lg hover:bg-blue-600" onclick="toggleCard('followersCard')">{{ user.profile.followers_count }} підписників</button>
+            <button type="button" class="ml-auto mr-3 bg-blue-500 text-white py-2 px-3 rounded-lg hover:bg-blue-600" onclick="toggleCard('followingCard')">{{ user.profile.following_count }} підписок</button>
+        </div>
+        <hr class="mt-4 mb-4 mr-3 bg-gray-300">
+    
+        <!-- Recommendations Section -->
+        <p class="text-center mb-4 font-semibold text-lg text-gray-800">-- Рекомендації --</p>
+        {% for rec in recomended %}
+            <div class="post-header-text flex items-center mb-4">
+                <img src="{{ rec.profile.get_avatar_url }}" alt="Аватар" class="w-12 h-12 rounded-full object-cover">
+                <div class="ml-4 flex flex-col">
+                    <strong class="text-lg">{{ rec.username }}</strong>
+                    <small class="text-gray-600">Ви знайомі?</small>
+                </div>
+                <small class="text-right ml-auto mr-3 text-blue-700 text-sm">
+                    <a href="{% url 'profile' rec.username %}" target="_blank">Переглянути</a>
+                </small>
+            </div>
+        {% endfor %}
+    </div>
 
-                        <div class="post-actions">
-                            <div style="margin-bottom: 10px;">
-                                <!-- Форма лайка -->
-                                <form method="post" action="{% url 'like_publ' publication.id %}" data-publication-id="{{ publication.id }}" class="like-form" style="display: inline;">
-                                    {% csrf_token %}
-                                    <button type="submit" class="btn p-0 like">
-                                        {% if publication.liked_by_user %}
-                                            <ion-icon name="paw" style="font-size: 24px; color: red;"></ion-icon>
-                                        {% else %}
-                                            <ion-icon name="paw-outline" style="font-size: 24px;"></ion-icon>
-                                        {% endif %}
-                                    </button>
-                                    <p class="like-count">{{ publication.likes_count }} лайков</p>
-                                </form>
-                                <hr>
-                            </div>
-                            <!-- Форма комментария -->
-                            <form method="post" action="{% url 'create_comment' %}" class="comment-form" style="display: flex; justify-content: space-between; align-items: center; flex-direction: column;">
-                                {% csrf_token %}
-                                <div class="relative w-full" style="perspective: 500px;">
-                                    <input type="hidden" name="publication_id" value="{{ publication.id }}">
-                                    {{ form.text_com }}
-                                    <button type="submit" class="ml-2 absolute bottom-1.5 right-2">
-                                        <ion-icon name="paper-plane" class="h-5 w-5 mr-1 " style="transform: rotateX(25deg); transform-style: flat;"></ion-icon>
-                                    </button>
-                                </div>
-                            </form>
-                        </div>
+<div id="followersCard" class="floating-card window-p">
+    <div class="card-inner">
+        <div class="card-header">
+            <h5>Підписники</h5>
+            <span class="close-btn" onclick="toggleCard('followersCard')">&times;</span>
+        </div>
+        <div class="card-body">
+            {% for follower in followers %}
+                <div class="follower-item">
+                    <img src="{{ follower.profile.get_avatar_url }}" alt="Аватар" style="width: 50px; height: 50px; border-radius: 50%;">
+                    <div>
+                        <p><a href="{% url 'profile' follower.username %}">{{ follower.username }}</a></p>
+                        <small>@ {{ follower.profile.uusername }}</small>
                     </div>
                 </div>
-                <hr>
+            {% empty %}
+                <p>Немає підписників</p>   
             {% endfor %}
         </div>
-    {% else %}
-        <div class="no-posts">
-            <p style="font-size: 18px;">Нет новых публикаций</p>
-        </div>
-    {% endif %}
+    </div>
 </div>
 
+
+<!-- Floating card: Підписки -->
+<div id="followingCard" class="floating-card window-p">
+    <div class="card-inner">
+        <div class="card-header">
+            <h5>Підписки</h5>
+            <span class="close-btn" onclick="toggleCard('followingCard')">&times;</span>
+        </div>
+        <div class="card-body">
+            {% for followed in following %}
+                <div class="follower-item">
+                    <img src="{{ followed.profile.get_avatar_url }}" alt="Аватар" style="width: 50px; height: 50px; border-radius: 50%;">
+                    <div>
+                        <p><a href="{% url 'profile' followed.username %}">{{ followed.username }}</a></p>
+                        <small>@ {{ followed.profile.uusername }}</small>
+                    </div>
+                </div>
+            {% empty %}
+                <p>Немає підписок</p>
+            {% endfor %}
+        </div>
+    </div>
+</div>
+
+
 <script>
+    function toggleCard(id) {
+        const card = document.getElementById(id);
+        card.style.display = card.style.display === 'block' ? 'none' : 'block';
+        }
     document.addEventListener('DOMContentLoaded', function () {
-        // Инициализация Swiper
+
+        // Закрытие карточек
+      window.addEventListener('click', function (e) {
+        document.querySelectorAll('.floating-card').forEach(card => {
+          if (!card.contains(e.target) && !e.target.matches('button')) {
+            card.style.display = 'none';
+          }
+        });
+      });
+
         document.querySelectorAll('.swiper').forEach(el => {
             const swiperInstance = new Swiper(el, {
                 loop: true,
+                centeredSlides: true,
                 slidesPerView: 1,
+                autoHeight: true,
                 pagination: {
                     el: el.querySelector('.swiper-pagination'),
                     clickable: true,
@@ -119,6 +272,8 @@
                     nextEl: el.querySelector('.swiper-button-next'),
                     prevEl: el.querySelector('.swiper-button-prev'),
                 },
+                observer: true,
+                observeParents: true,
             });
 
             el.querySelectorAll('img, video').forEach(media => {
@@ -149,7 +304,7 @@
                         const icon = this.querySelector('ion-icon');
                         icon.name = data.liked ? 'paw' : 'paw-outline';
                         icon.style.color = data.liked ? 'red' : '';
-                        this.querySelector('.like-count').textContent = `${data.likes_count} лайков`;
+                        this.querySelector('.like-count').textContent = `${data.likes_count}`;
                     }
                 });
             });
@@ -231,4 +386,5 @@
         });
     });
 </script>
+
 {% endblock content %}

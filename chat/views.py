@@ -102,26 +102,44 @@ def chatroom_edit_view(request, chatroom_name):
     chat_group = get_object_or_404(ChatGroup, group_name=chatroom_name)
     if request.user != chat_group.admin:
         raise Http404()
-    
+
     form = ChatRoomEditForm(instance=chat_group)
+    invite_form = InviteUserForm(chat_group=chat_group)
 
     if request.method == 'POST':
-        form = ChatRoomEditForm(request.POST, instance=chat_group)
-        if form.is_valid():
-            form.save()
+        if 'update_group' in request.POST:
+            form = ChatRoomEditForm(request.POST, instance=chat_group)
+            if form.is_valid():
+                form.save()
 
-            remove_members = request.POST.getlist('remove_members')
-            for member_id in remove_members:
-                member = User.objects.get(id=member_id)
-                chat_group.members.remove(member)
+                remove_members = request.POST.getlist('remove_members')
+                for member_id in remove_members:
+                    member = User.objects.get(id=member_id)
+                    chat_group.members.remove(member)
 
-            return redirect('chatroom', chatroom_name)
+                messages.success(request, "Налаштування збережено.")
+                return redirect('chatroom', chatroom_name)
+
+        elif 'invite_user' in request.POST:
+            invite_form = InviteUserForm(request.POST)
+            if invite_form.is_valid():
+                to_user = invite_form.cleaned_data['user']
+                if to_user not in chat_group.members.all():
+                    ChatInvitation.objects.get_or_create(
+                        from_user=request.user,
+                        to_user=to_user,
+                        chat_group=chat_group
+                    )
+                    messages.success(request, f"{to_user.username} запрошено до чату.")
+                return redirect('chatroom', chatroom_name)
 
     context = {
         'form': form,
+        'invite_form': invite_form,
         'chat_group': chat_group
     }
     return render(request, 'chat/chatroom_edit.html', context)
+
 
 
 @login_required
@@ -147,3 +165,38 @@ def chatroom_leave_view(request, chatroom_name):
         chat_group.members.remove(request.user)
         messages.success(request, "Ти покинув чат")
         return redirect('chat_list')
+    
+
+@login_required
+def favorites_chat_view(request):
+    # Ищем, есть ли уже чат с самим собой
+    favorites_group_name = f"favorites_{request.user.username}"
+    chat_group, created = ChatGroup.objects.get_or_create(
+        group_name=favorites_group_name,
+        defaults={
+            'is_private': True,
+            'group_chat_name': f"Вибране ({request.user.username})"
+        }
+    )
+
+    if created:
+        chat_group.members.add(request.user)
+    
+    return redirect('chatroom', chat_group.group_name)
+
+
+@login_required
+def handle_invite_view(request, invite_id, action):
+    invite = get_object_or_404(ChatInvitation, id=invite_id, to_user=request.user, accepted__isnull=True)
+    referer = request.META.get('HTTP_REFERER', '/')
+    
+    if action == 'accept':
+        invite.accepted = True
+        invite.chat_group.members.add(request.user)
+    elif action == 'decline':
+        invite.accepted = False
+    
+    invite.save()
+    invite.delete()
+
+    return redirect(referer)

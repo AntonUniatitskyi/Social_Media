@@ -732,6 +732,7 @@ mini-logo {
     height: auto;
 }
 
+
 .swiper-slide {
     display: flex;
     justify-content: center;
@@ -746,7 +747,7 @@ mini-logo {
     width: auto;
     height: auto;
     max-width: 100%;
-    max-height: 100%;
+    max-height: 80vh;
     object-fit: contain;
 }
 
@@ -895,12 +896,20 @@ mini-logo {
     background-color: #0052cc;
 }
 
-/* .green-dot {
-    @apply rounded-full bg-green-500 p-1.5;
+.window-p {
+    background: transparent;
+    backdrop-filter: blur(45px);
 }
-.gray-dot {
-    @apply rounded-full bg-gray-500 p-1.5;
+
+.badge {
+    display: inline-block;
+    position: absolute;
+    top: -5px;
+    right: -5px;
+    color: white;
+    border-radius: 50%;
+    padding: 5px 10px;
+    font-size: 12px;
+    font-weight: bold;
+    z-index: 9999;
 }
-.graylight-dot {
-    @apply rounded-full bg-gray-300 p-1.5;
-} */

@@ -38,16 +38,16 @@
                 {% for publication in publications %}
                     <div class="post-page-container" data-publication-id="{{ publication.id }}">
                         <div class="post-media">
-                            <div class="media_container">
+                            <div class="media_container mx-auto max-w-[300px] w-full px-4">
                                 {% if publication.media_items.all %}
-                                    <div class="swiper swiper-{{ publication.id }}">
+                                    <div class="swiper swiper-{{ publication.id }} w-full">
                                         <div class="swiper-wrapper">
                                             {% for media in publication.media_items.all %}
                                                 <div class="swiper-slide">
                                                     {% if media.is_image %}
-                                                        <img src="{{ media.file.url }}" alt="Публикація" style="max-height: 80vh; max-width: 100%; object-fit: contain;">
+                                                        <img src="{{ media.file.url }}" alt="Публикація" class="w-full max-h-[80vh] object-contain rounded-[10px]">
                                                     {% elif media.is_video %}
-                                                        <video src="{{ media.file.url }}" controls style="max-height: 80vh; max-width: 100%;"></video>
+                                                        <video src="{{ media.file.url }}" controls class="w-full max-h-[80vh] object-contain rounded-[10px]"></video>
                                                     {% endif %}
                                                 </div>
                                             {% endfor %}
@@ -91,13 +91,15 @@
                                     <!--Тут форма лайка-->
                                     <form method="post" action="{% url 'like_publ' publication.id %}" data-publication-id="{{ publication.id }}" class="like-form" style="display: inline;">
                                         {% csrf_token %}
-                                        <button type="submit" class="btn p-0 like">
-                                        {% if publication.liked_by_user %}
-                                            <ion-icon name="paw" style="font-size: 24px; color: red;"></ion-icon>  <!-- лайкнуто -->
-                                        {% else %}
-                                            <ion-icon name="paw-outline" style="font-size: 24px;"></ion-icon>  <!-- не лайкнуто -->
-                                        {% endif %}
-                                        </button><p class="like-count">{{ publication.likes_count }} лайків</p>
+                                        <div class="flex flex-row">
+                                            <button type="submit" class="btn p-0 like">
+                                            {% if publication.liked_by_user %}
+                                                <ion-icon name="paw" style="font-size: 24px; color: red;"></ion-icon>  <!-- лайкнуто -->
+                                            {% else %}
+                                                <ion-icon name="paw-outline" style="font-size: 24px;"></ion-icon>  <!-- не лайкнуто -->
+                                            {% endif %}
+                                            </button><p class="like-count ml-2">{{ publication.likes_count }}</p>
+                                        </div>
                                         
                                     </form><hr>
                                 </div>
@@ -139,7 +141,7 @@
     </form> -->
 </div>
 
-<div id="followersCard" class="floating-card">
+<div id="followersCard" class="floating-card window-p">
     <div class="card-inner">
         <div class="card-header">
             <h5>Підписники</h5>
@@ -148,14 +150,10 @@
         <div class="card-body">
             {% for follower in followers %}
                 <div class="follower-item">
-                    {% if follower.profile.avatar %}
-                        <img src="{{ follower.profile.avatar.url }}" alt="Аватар" style="width: 50px; height: 50px; border-radius: 50%;">     
-                    {% else %}
-                        <img src="/media/avatars/default-avatar.png" alt="Аватар по умолчанию" style="width: 50px; height: 50px; border-radius: 50%;">
-                    {% endif %}
+                    <img src="{{ follower.profile.get_avatar_url }}" alt="Аватар" style="width: 50px; height: 50px; border-radius: 50%;">
                     <div>
                         <p><a href="{% url 'profile' follower.username %}">{{ follower.username }}</a></p>
-                        <small>{{ follower.email }}</small>
+                        <small>@ {{ follower.profile.uusername }}</small>
                     </div>
                 </div>
             {% empty %}
@@ -167,7 +165,7 @@
 
 
 <!-- Floating card: Підписки -->
-<div id="followingCard" class="floating-card">
+<div id="followingCard" class="floating-card window-p">
     <div class="card-inner">
         <div class="card-header">
             <h5>Підписки</h5>
@@ -176,14 +174,10 @@
         <div class="card-body">
             {% for followed in following %}
                 <div class="follower-item">
-                    {% if followed.profile.avatar %}
-                        <img src="{{ followed.profile.avatar.url }}" alt="Аватар" style="width: 50px; height: 50px; border-radius: 50%;">
-                    {% else %}
-                        <img src="/media/avatars/default-avatar.png" alt="Аватар по умолчанию" style="width: 50px; height: 50px; border-radius: 50%;">
-                    {% endif %}
+                    <img src="{{ followed.profile.get_avatar_url }}" alt="Аватар" style="width: 50px; height: 50px; border-radius: 50%;">
                     <div>
                         <p><a href="{% url 'profile' followed.username %}">{{ followed.username }}</a></p>
-                        <small>{{ followed.email }}</small>
+                        <small>@ {{ followed.profile.uusername }}</small>
                     </div>
                 </div>
             {% empty %}
@@ -213,16 +207,20 @@
       // Инициализация Swiper
       document.querySelectorAll('.swiper').forEach(el => {
         const swiperInstance = new Swiper(el, {
-          loop: true,
-          slidesPerView: 1,
-          pagination: {
-            el: el.querySelector('.swiper-pagination'),
-            clickable: true,
-          },
-          navigation: {
-            nextEl: el.querySelector('.swiper-button-next'),
-            prevEl: el.querySelector('.swiper-button-prev'),
-          },
+            loop: true,
+            centeredSlides: true,
+            slidesPerView: 1,
+            autoHeight: true,
+            pagination: {
+                el: el.querySelector('.swiper-pagination'),
+                clickable: true,
+            },
+            navigation: {
+                nextEl: el.querySelector('.swiper-button-next'),
+                prevEl: el.querySelector('.swiper-button-prev'),
+            },
+            observer: true,
+            observeParents: true,
         });
   
         el.querySelectorAll('img, video').forEach(media => {
@@ -254,7 +252,7 @@
               const icon = this.querySelector('ion-icon');
               icon.name = data.liked ? 'paw' : 'paw-outline';
               icon.style.color = data.liked ? 'red' : '';
-              this.querySelector('.like-count').textContent = `${data.likes_count} лайків`;
+              this.querySelector('.like-count').textContent = `${data.likes_count}`;
             }
           });
         });

@@ -1,0 +1,9 @@
+{% extends "social/base.html" %}
+
+{% block content %}
+<div class="text-center mt-5">
+    <h1>😕 Ой, сторінку не знайдено (404)</h1>
+    <p>Ми не можемо знайти те, що ти шукаєш.</p>
+    <a href="{% url 'chat_home' %}" class="btn btn-primary mt-3">Повернутися на головну</a>
+</div>
+{% endblock %}
