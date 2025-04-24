@@ -51,7 +51,7 @@
         }).then((result) => {
             {% if "success" in message.tags %}
             if (result.isConfirmed) {
-                window.location.href = "{% url 'users:account' %}";
+                window.location.href = "{% url 'account' %}";
             }
             {% endif %}
         });

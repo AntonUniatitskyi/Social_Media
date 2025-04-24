@@ -15,5 +15,7 @@ urlpatterns = [
     path('add-publication/', views.PublicationCreateView.as_view(), name='publ_add'),
     path('post-data/<int:post_id>/', views.post_data, name='post_data'),
     path('create_comment/', views.CommentCreateView.as_view(), name='create_comment'),
-    path('like/<int:publication_id>/', views.like_publ, name='like_publ')
+    path('like/<int:publication_id>/', views.like_publ, name='like_publ'),
+    path('setting-page/', views.setting_page, name='settings'),
+    path('notification/', views.notification ,name='notification')
 ]

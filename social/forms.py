@@ -14,7 +14,8 @@ class CommentForm(forms.ModelForm):
                 'rows': 2,
                 'placeholder': 'Ваш коментар',
                 # 'style': 'background-color: white; border-color: black; width: auto',
-                'class': 'comment-text'
+                'class': 'comment-text',
+                # 'style': 'color: #4a4a4a; background-color: #b7ada5'
             })
         }
 
@@ -26,15 +27,23 @@ class PublicationForm(forms.ModelForm):
             'text': forms.Textarea(attrs={
                 'id': 'id_text',
                 'rows': 2,
-                'placeholder': 'Підпис'
+                'placeholder': 'Підпис',
+                'class': 'w-full px-4 py-2 border border-gray-300 rounded-xl focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent shadow-sm'
             }),
         }
+    def __init__(self, *args, **kwargs):
+        self.files = kwargs.pop('files', None)
+        super().__init__(*args, **kwargs)
 
 class ProfileForm(forms.ModelForm):
     class Meta:
         model = Profile
-        fields = ['bio', 'avatar']
+        fields = ['bio', 'avatar', 'uusername']
         widgets = {
+            'uusername': forms.TextInput(attrs={
+                'id': 'uusername',
+                'placeholder': 'Ваш нік'
+            }),
             'bio': forms.Textarea(attrs={
                 'id': 'id_bio',
                 'rows': 4,
@@ -71,7 +80,7 @@ class UserForm(UserCreationForm):
 class UserEditForm(forms.ModelForm):
     class Meta:
         model = User
-        fields = ['email', 'username', 'password']
+        fields = ['email', 'username']
         widgets = {
             'email': EmailInput(),
             'username': TextInput()
