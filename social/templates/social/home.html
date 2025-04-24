@@ -8,11 +8,11 @@
 
 <div class="flex flex-col xl:flex-row gap-4 px-2 sm:px-4">
 
-    <div class="hidden xl:block w-1/5 mt-3 mb-10 pl-3 pt-3 pb-20 overflow-y-auto sticky top-10 bg-white rounded-2xl border border-gray-300 shadow-xl max-h-[calc(100vh-85px)]">
+    <div class="hidden xl:block w-1/5 mt-3 mb-10 pl-3 pt-3 pb-20 overflow-y-auto sticky top-10 home-card rounded-2xl border border-gray-300 shadow-xl max-h-[calc(100vh-85px)]">
         <div class="container">
             <!-- Favorites Section -->
             <a href="{% url 'favorites_chat' %}"
-               class="flex items-center gap-3 px-4 py-3 text-sm font-medium text-gray-800 bg-yellow-50 hover:bg-yellow-100 rounded-xl transition-all duration-200 mb-6 shadow-sm">
+               class="flex items-center gap-3 px-4 py-3 text-sm font-medium text-gray-800 gol-s rounded-xl transition-all duration-200 mb-6 shadow-sm">
                 <span class="text-yellow-500 text-xl">⭐</span>
                 <span class="font-semibold">Вибране</span>
             </a>
@@ -23,21 +23,21 @@
                 <ul class="space-y-6">
                     {% for invite in invites %}
                         {% if invite.accepted is None %}
-                            <li class="bg-gradient-to-br from-white via-blue-50 to-white p-2 rounded-2xl border border-gray-200 shadow-md hover:shadow-xl transition duration-300">
+                            <li class="p-2 rounded-2xl border border-gray-200 shadow-md hover:shadow-xl transition duration-300" style="background-color: #beb3ab;">
                                 <div class="flex items-start gap-2">
                                     <div class="flex-1">
                                         <p class="text-sm text-gray-700 leading-relaxed">
                                             <span class="font-semibold text-gray-900">{{ invite.from_user.username }}</span>
                                             запросив тебе у групу
-                                            <span class="font-semibold text-blue-600">{{ invite.chat_group.group_chat_name }}</span>.
+                                            <span class="font-semibold text-gray-900">{{ invite.chat_group.group_chat_name }}</span>.
                                         </p>
                                         <div class="mt-2 flex gap-1 flex-col">
                                             <a href="{% url 'respond_to_invite' invite.id 'accept' %}"
-                                               class="flex items-center gap-2 px-4 py-2 text-sm font-semibold bg-green-500 text-white rounded-xl hover:bg-green-600 transition shadow">
+                                               class="flex items-center gap-2 px-4 py-2 text-sm font-semibold text-white rounded-xl hover:bg-green-600 transition shadow" style="background-color: #5e8677; color: #ede6dbf1;">
                                                 ✅ Прийняти
                                             </a>
                                             <a href="{% url 'respond_to_invite' invite.id 'reject' %}"
-                                               class="flex items-center gap-2 px-4 py-2 text-sm font-semibold bg-red-500 text-white rounded-xl hover:bg-red-600 transition shadow">
+                                               class="flex items-center gap-2 px-4 py-2 text-sm font-semibold text-white rounded-xl hover:bg-red-600 transition shadow" style="background-color: #bf3535; color: #ede6dbf1;">
                                                 ❌ Відхилити
                                             </a>
                                         </div>
@@ -60,7 +60,7 @@
         {% if home %}
             <div class="posts-list">
                 {% for publication in home %}
-                    <div class="post-page-container" data-publication-id="{{ publication.id }}">
+                    <div class="post-page-container shadow-xl home-card" data-publication-id="{{ publication.id }}">
                         <div class="post-media">
                             <div class="media_container mx-auto max-w-[300px] w-full px-4">
                                 {% if publication.media_items.all %}
@@ -85,7 +85,7 @@
                                 {% endif %}
                             </div>
                         </div>                    
-                        <div class="post-details">
+                        <div class="post-details home-card">
                             <div class="post-header">
                                 <div class="post-header-text">
                                     <div>
@@ -97,8 +97,8 @@
                                         {% else %}
                                             <strong><a href="{% url 'profile' publication.profile.user.username %}" style="display: block;">{{ publication.profile.user.username }}</a></strong>
                                         {% endif %}
-                                        <small style="color: #888; display: block; margin-top: -4px;">@ {{ publication.profile.uusername }}</small>
-                                        <small style="color: #888;">{{ publication.timestamp|date:"d.m.Y H:i" }}</small>
+                                        <small style="color: #4a4a4a; display: block; margin-top: -4px;">@ {{ publication.profile.uusername }}</small>
+                                        <small style="color: #4a4a4a;">{{ publication.timestamp|date:"d.m.Y H:i" }}</small>
                                     </div>
                                 </div>
                             </div>
@@ -107,10 +107,10 @@
                                 {% for comment in publication.comments.all %}
                                     <div style="margin-bottom: 15px;">
                                         <strong>{{ comment.user.user.username }}</strong>: {{ comment.text_com }}
-                                        <small style="color: #888; display: block;">{{ comment.created_at|date:"d.m.Y H:i" }}</small>
+                                        <small style="color: #4a4a4a; display: block;">{{ comment.created_at|date:"d.m.Y H:i" }}</small>
                                     </div>
                                 {% empty %}
-                                    <p style="color: #666;">Коментарів нема</p>
+                                    <p style="color: #4a4a4a;">Коментарів нема</p>
                                 {% endfor %}
                             </div>
 
@@ -122,20 +122,20 @@
                                         <div class="flex flex-row">
                                             <button type="submit" class="btn p-0 like">
                                                 {% if publication.liked_by_user %}
-                                                    <ion-icon name="paw" style="font-size: 24px; color: red;"></ion-icon>
+                                                    <ion-icon name="paw" style="font-size: 24px; color: rgb(154, 0, 0);"></ion-icon>
                                                 {% else %}
                                                     <ion-icon name="paw-outline" style="font-size: 24px;"></ion-icon>
                                                 {% endif %}
                                             </button>
-                                            <p class="like-count ml-2">{{ publication.likes_count }}</p>
+                                            <p class="like-count ml-2" style="color: #4a4a4a;">{{ publication.likes_count }}</p>
                                         </div>
                                     </form>
                                     <hr>
                                 </div>
                                 <!-- Форма комментария -->
-                                <form method="post" action="{% url 'create_comment' %}" class="comment-form" style="display: flex; justify-content: space-between; align-items: center; flex-direction: column;">
+                                <form method="post" action="{% url 'create_comment' %}" class="comment-form" style="display: flex; justify-content: space-between; align-items: center; flex-direction: column; color: #4a4a4a;">
                                     {% csrf_token %}
-                                    <div class="relative w-full" style="perspective: 500px;">
+                                    <div class="relative w-full" style="perspective: 500px; color: #4a4a4a;">
                                         <input type="hidden" name="publication_id" value="{{ publication.id }}">
                                         {{ form.text_com }}
                                         <button type="submit" class="ml-2 absolute bottom-1.5 right-2">
@@ -156,7 +156,7 @@
         {% endif %}
     </div>
 
-    <div class="hidden xl:block w-1/5 mt-3 mb-10 pl-3 pt-3 pb-20 overflow-y-auto sticky top-10 bg-white rounded-lg border border-gray-300 shadow-lg max-h-[calc(100vh-85px)]">
+    <div class="hidden xl:block w-1/5 mt-3 mb-10 pl-3 pt-3 pb-20 overflow-y-auto sticky top-10 home-card rounded-lg border border-gray-300 shadow-lg max-h-[calc(100vh-85px)]">
         <!-- Profile Section -->
         <p class="text-center mb-4 font-semibold text-lg text-gray-800">-- Профіль --</p>
         <div class="post-header-text flex items-center mb-4">
@@ -166,7 +166,7 @@
                 <small class="text-gray-600">@ {{ user.profile.uusername }}</small>
             </div>
         </div>
-        <small class="text-right ml-auto mr-3 text-blue-700 text-sm">
+        <small class="text-right ml-auto mr-3 text-sm" style="color: #3d3d3d;">
             <a href="{% url 'account' %}">Перейти в профіль</a>
         </small>
         <hr class="mt-4 mb-4 mr-3 bg-gray-300">
@@ -174,8 +174,8 @@
         <!-- Info Section -->
         <p class="text-center mb-4 font-semibold text-lg text-gray-800">-- Інфо --</p>
         <div class="flex flex-row mb-4">
-            <button type="button" class="bg-blue-500 text-white py-2 px-3 rounded-lg hover:bg-blue-600" onclick="toggleCard('followersCard')">{{ user.profile.followers_count }} підписників</button>
-            <button type="button" class="ml-auto mr-3 bg-blue-500 text-white py-2 px-3 rounded-lg hover:bg-blue-600" onclick="toggleCard('followingCard')">{{ user.profile.following_count }} підписок</button>
+            <button type="button" class="gol-s text-black py-2 px-3 rounded-lg" onclick="toggleCard('followersCard')">{{ user.profile.followers_count }} підписників</button>
+            <button type="button" class="gol-s ml-auto mr-3 text-black py-2 px-3 rounded-lg" onclick="toggleCard('followingCard')">{{ user.profile.following_count }} підписок</button>
         </div>
         <hr class="mt-4 mb-4 mr-3 bg-gray-300">
     
@@ -188,7 +188,7 @@
                     <strong class="text-lg">{{ rec.username }}</strong>
                     <small class="text-gray-600">Ви знайомі?</small>
                 </div>
-                <small class="text-right ml-auto mr-3 text-blue-700 text-sm">
+                <small class="text-right ml-auto mr-3 text-sm" style="color: #ede6dbf1;">
                     <a href="{% url 'profile' rec.username %}" target="_blank">Переглянути</a>
                 </small>
             </div>
@@ -303,7 +303,7 @@
                     if (data.success) {
                         const icon = this.querySelector('ion-icon');
                         icon.name = data.liked ? 'paw' : 'paw-outline';
-                        icon.style.color = data.liked ? 'red' : '';
+                        icon.style.color = data.liked ? 'rgb(154, 0, 0)' : '';
                         this.querySelector('.like-count').textContent = `${data.likes_count}`;
                     }
                 });

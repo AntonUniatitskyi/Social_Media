@@ -1,5 +1,4 @@
 from random import shuffle
-
 from django.contrib import messages
 from django.contrib.auth import login
 from django.contrib.auth.decorators import login_required
@@ -11,10 +10,8 @@ from django.http import JsonResponse
 from django.shortcuts import get_object_or_404, redirect, render
 from django.views.decorators.http import require_POST
 from django.views.generic import CreateView, DetailView, ListView, View
-
 import core.settings
 from chat.models import ChatInvitation
-
 from . import models
 from .forms import CommentForm, ProfileForm, PublicationForm, UserEditForm, UserForm
 
@@ -81,6 +78,14 @@ class PublicationCreateView(LoginRequiredMixin, CreateView):
 
         for file in files[:10]:
             models.MediaItem.objects.create(publication=publication, file=file)
+
+        for follower in publication.profile.followers.all():
+            models.Notification.objects.create(
+                recipient=follower,
+                sender=self.request.user,
+                message=f"{self.request.user.username} створив нову публікацію"
+            )
+
 
         messages.success(self.request, "Публікацію створено!")
         return redirect('home')

@@ -32,7 +32,7 @@
                 {% if chatroom.group_chat_name and chatroom.group_chat_name != favorites_name %}
                     <li>
                         <a href="{% url 'chatroom' chatroom.group_name %}" 
-                        class="flex items-center justify-between p-4 bg-white hover:bg-gray-100 rounded-xl shadow-sm transition">
+                        class="flex items-center justify-between p-4 home-card hover:bg-gray-100 rounded-xl shadow-sm transition">
                             <span class="text-gray-800 font-medium" style="text-decoration: none;">
                                 {{ chatroom.group_chat_name|slice:":30" }}
                             </span>
@@ -51,7 +51,7 @@
                     {% if member != user %}
                         <li>
                             <a href="{% url 'chatroom' chatroom.group_name %}" 
-                               class="flex items-center justify-between p-4 bg-white hover:bg-gray-100 rounded-xl shadow-sm transition">
+                               class="flex items-center justify-between p-4 home-card hover:bg-gray-100 rounded-xl shadow-sm transition">
                                 <div class="flex items-center gap-3">
                                     <img src="{{ member.profile.get_avatar_url }}" 
                                          alt="{{ member.profile.user.username }}" 

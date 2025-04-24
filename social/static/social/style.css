@@ -21,7 +21,7 @@ input[type="password"] {
 
 body {
     font-family: Arial, sans-serif;
-    background-color: #f4f4f9;
+    background-color: #d9cfc3;
     margin: 0;
     padding: 0;
     min-height: 100vh; 
@@ -461,15 +461,19 @@ input:valid ~ label {
 }
 
 .comment-text {
-    background-color: white;
+    background-color: #beb3ab;
     width: 100%;
     border: 1px solid #000;
     box-sizing: border-box;
     resize: vertical;
     padding: 8px 12px;
     border-radius: 6px;
+    color: #4a4a4a;
 }
 
+.comment-text::placeholder {
+    color: #4a4a4a;
+}
 
 
 
@@ -834,6 +838,7 @@ mini-logo {
 
 .create-post-container {
     max-width: 600px;
+    background-color: white;
     margin: auto;
     padding: 20px;
     border-radius: 16px;
@@ -912,4 +917,24 @@ mini-logo {
     font-size: 12px;
     font-weight: bold;
     z-index: 9999;
+}
+
+.home-card {
+    background-color: #e1d9cef1 !important;
+}
+
+/* label {
+    background-color: #b7ada5 !important;
+} */
+
+.gol-s {
+    background-color: #f7f6e0;
+}
+
+.gol-s:focus {
+    background-color: #f8f6d5 !important;
+}
+
+.gol-s:hover {
+    background-color: #f8f6d5 !important;
 }
