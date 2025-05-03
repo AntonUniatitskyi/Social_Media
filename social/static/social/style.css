@@ -938,3 +938,21 @@ mini-logo {
 .gol-s:hover {
     background-color: #f8f6d5 !important;
 }
+
+.admin-badge {
+    box-shadow: 0 0 5px rgba(255, 0, 0, 0.5);
+    letter-spacing: 0.5px;
+}
+
+.form-select:focus {
+    outline: none;
+    border-color: #b07d62;
+    box-shadow: 0 0 10px rgba(176, 125, 98, 0.8);
+    background-color: #ffffff;
+}
+
+.form-select {
+    padding: 0.75rem 1.25rem; /* Увеличиваем отступы для удобства */
+    border-radius: 0.375rem; /* Скругление углов */
+    border: 1px solid #ccc;
+}

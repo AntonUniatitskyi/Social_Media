@@ -17,5 +17,7 @@ urlpatterns = [
     path('create_comment/', views.CommentCreateView.as_view(), name='create_comment'),
     path('like/<int:publication_id>/', views.like_publ, name='like_publ'),
     path('setting-page/', views.setting_page, name='settings'),
-    path('notification/', views.notification ,name='notification')
+    path('notification/', views.notification ,name='notification'),
+    path('add-complaint/<int:publication_id>/', views.add_complaint, name='add_complaint'),
+    path('respond_to_complaint/<int:complaint_id>/<str:action>/', views.respond_to_complaint, name='respond_complaint')
 ]

@@ -50,4 +50,25 @@
     </div>
 
 </div>
+<div class="max-w-md mx-auto mt-10 p-6 bg-white dark:bg-zinc-900 rounded-2xl shadow-xl space-y-6 text-center"">
+    {% with user.groups.first as group %}
+        {% if group and group.name == 'Адміністратор' %}
+            <div>
+                {% if set_admin_form %}
+                    <form method="post" class="p-4 bg-light shadow-sm rounded">
+                        {% csrf_token %}
+                        <div class="mb-3">
+                            <label for="{{ set_admin_form.user.id_for_label }}" class="form-label">Оберіть користувача</label>
+                            {{ set_admin_form.user }}
+                        </div>
+                        <button type="submit" class="btn btn-primary w-100">Підтвердити</button>
+                    </form>
+                {% endif %}
+            </div>    
+        {% endif %}
+    {% endwith %}
+    {% if message != None %}
+        {{ message }}
+    {% endif %}
+</div>
 {% endblock content %}

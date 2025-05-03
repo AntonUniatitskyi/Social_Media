@@ -28,7 +28,11 @@
                 {% else %}
                     <p style="max-width: 400px;"></p>
                 {% endif %}
-                <!-- <a href="{% url 'edit' %}" class="unsubscribe-btn">Редагувати профіль</a> -->
+                {% if user.groups.first.name == 'Адміністратор' %}
+                    <span class="inline-block bg-red-600 text-white text-sm font-bold px-2 py-0.5 rounded-full whitespace-nowrap w-fit mt-2">
+                        👑 Адміністратор
+                    </span>
+                {% endif %}
             </div>
         </div>
         <hr style="margin: 30px 0; border-color: gray;">
