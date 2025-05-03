@@ -1,7 +1,7 @@
 from django.contrib.auth.forms import UserCreationForm, AuthenticationForm
 from django.contrib.auth.models import User, Group
 from django.forms import Form, EmailField, EmailInput, CharField, PasswordInput, TextInput, Textarea, ChoiceField, ModelChoiceField, Select
-from .models import Profile, Publication, Comment
+from .models import Profile, Publication, Comment, Complaint
 from django import forms
 
 class CommentForm(forms.ModelForm):
@@ -101,3 +101,33 @@ class UserPasswordForm(AuthenticationForm):
 
     class Meta:
         fields = ['username', 'password']
+
+class SetAdminForm(Form):
+    def __init__(self, *args, **kwargs):
+        user = kwargs.pop('user', None)
+        super().__init__(*args, **kwargs)
+        if user:
+            self.fields['user'].queryset = User.objects.exclude(id=user.id)
+    
+    user = ModelChoiceField(
+        queryset=User.objects.all(), 
+        label="Оберіть користувача",
+        widget=Select(attrs={'class': 'form-select'})
+    )
+
+
+class SetComplainForm(forms.ModelForm):
+    class Meta:
+        model = Complaint
+        fields = ["reason", "text"]
+        widgets = {
+            'reason': TextInput(attrs={
+                'class': 'form-control'
+            }),
+            'text': Textarea(attrs={
+                'rows': 4,
+                'placeholder': 'Детальніше про скаргу',
+                'class': 'form-control'
+                }
+                )
+        }

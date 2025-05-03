@@ -70,3 +70,27 @@ class Notification(models.Model):
 
     def __str__(self):
         return f"Уведомление для {self.recipient.username} от {self.sender.username}"
+    
+class Complaint(models.Model):
+    user = models.ForeignKey(User, on_delete=models.CASCADE)
+    publication = models.ForeignKey(Publication, on_delete=models.CASCADE)
+    reason = models.CharField(max_length=100)
+    text = models.TextField(blank=True)
+    created_at = models.DateTimeField(auto_now_add=True)
+    accepted = models.BooleanField(default=None, null=True)
+
+    def __str__(self):
+        return f"Complaint by {self.user.username} on {self.publication.id}"
+    
+    def accept_complaint(self):
+        self.accepted = True
+        self.save()
+
+        try:
+            self.publication.delete()
+        except Exception as e:
+            print(f"Помилка при видаленні: {e}")
+
+    def reject_complaint(self):
+        self.accepted = False
+        self.save()

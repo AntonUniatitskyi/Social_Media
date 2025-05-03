@@ -60,6 +60,36 @@
         {% if home %}
             <div class="posts-list">
                 {% for publication in home %}
+                    <!-- Floating card: Скарги -->
+                    <div id="complainCard-{{ publication.id }}" class="floating-card window-p">
+                        <div class="card-inner shadow-lg rounded-3 p-3 bg-white border">
+                            <div class="card-header d-flex justify-content-between align-items-center border-bottom pb-2 mb-3">
+                                <h5 class="mb-0">Поскаржитись</h5>
+                                <span class="close-btn fs-4 cursor-pointer" onclick="toggleCard('complainCard-{{ publication.id }}')">&times;</span>
+                            </div>
+                            <div class="card-body">
+                                {% if complaint %}
+                                    <form method="post" action="{% url 'add_complaint' publication.id %}">
+                                        {% csrf_token %}
+                                        <input type="hidden" name="publication_id" value="{{ publication.id }}">
+                                        
+                                        <div class="mb-3">
+                                            <label for="id_reason" class="form-label">Причина</label>
+                                            {{ complaint.reason }}
+                                        </div>
+                                        
+                                        <div class="mb-3">
+                                            <label for="id_text" class="form-label">Деталі</label>
+                                            {{ complaint.text }}
+                                        </div>
+
+                                        <button type="submit" class="btn btn-danger w-100">Підтвердити</button>
+                                    </form>
+                                {% endif %}
+                            </div>
+                        </div>
+                    </div>
+
                     <div class="post-page-container shadow-xl home-card" data-publication-id="{{ publication.id }}">
                         <div class="post-media">
                             <div class="media_container mx-auto max-w-[300px] w-full px-4">
@@ -87,18 +117,25 @@
                         </div>                    
                         <div class="post-details home-card">
                             <div class="post-header">
-                                <div class="post-header-text">
-                                    <div>
-                                        <img src="{{ publication.profile.get_avatar_url }}" alt="Аватар" class="w-10 h-10 rounded-full object-cover">
+                                <div class="post-header-text flex flex-row justify-between items-start">
+                                    <div class="post-header-text">
+                                        <div>
+                                            <img src="{{ publication.profile.get_avatar_url }}" alt="Аватар" class="w-10 h-10 rounded-full object-cover">
+                                        </div>
+                                        <div>
+                                            {% if publication.profile.user.username == user.username %}
+                                                <strong><a href="{% url 'account' %}" style="display: block;">{{ publication.profile.user.username }}</a></strong>
+                                            {% else %}
+                                                <strong><a href="{% url 'profile' publication.profile.user.username %}" style="display: block;">{{ publication.profile.user.username }}</a></strong>
+                                            {% endif %}
+                                            <small style="color: #4a4a4a; display: block; margin-top: -4px;">@ {{ publication.profile.uusername }}</small>
+                                            <small style="color: #4a4a4a;">{{ publication.timestamp|date:"d.m.Y H:i" }}</small>
+                                        </div>
                                     </div>
-                                    <div>
-                                        {% if publication.profile.user.username == user.username %}
-                                            <strong><a href="{% url 'account' %}" style="display: block;">{{ publication.profile.user.username }}</a></strong>
-                                        {% else %}
-                                            <strong><a href="{% url 'profile' publication.profile.user.username %}" style="display: block;">{{ publication.profile.user.username }}</a></strong>
-                                        {% endif %}
-                                        <small style="color: #4a4a4a; display: block; margin-top: -4px;">@ {{ publication.profile.uusername }}</small>
-                                        <small style="color: #4a4a4a;">{{ publication.timestamp|date:"d.m.Y H:i" }}</small>
+                                    <div class="items-end">
+                                        <button type="button" onclick="toggleCard('complainCard-{{ publication.id }}')">
+                                            Скарга
+                                        </button>
                                     </div>
                                 </div>
                             </div>
@@ -241,22 +278,21 @@
     </div>
 </div>
 
-
 <script>
     function toggleCard(id) {
         const card = document.getElementById(id);
         card.style.display = card.style.display === 'block' ? 'none' : 'block';
-        }
-    document.addEventListener('DOMContentLoaded', function () {
+    }
 
+    document.addEventListener('DOMContentLoaded', function () {
         // Закрытие карточек
-      window.addEventListener('click', function (e) {
-        document.querySelectorAll('.floating-card').forEach(card => {
-          if (!card.contains(e.target) && !e.target.matches('button')) {
-            card.style.display = 'none';
-          }
+        window.addEventListener('click', function (e) {
+            document.querySelectorAll('.floating-card').forEach(card => {
+                if (!card.contains(e.target) && !e.target.matches('button')) {
+                    card.style.display = 'none';
+                }
+            });
         });
-      });
 
         document.querySelectorAll('.swiper').forEach(el => {
             const swiperInstance = new Swiper(el, {
@@ -382,6 +418,39 @@
 
             img.addEventListener('dblclick', function () {
                 triggerLike(this);
+            });
+        });
+
+        // AJAX для формы жалобы
+        document.querySelectorAll('[id^="complain-form-"]').forEach(form => {
+            form.addEventListener('submit', function (e) {
+                e.preventDefault();
+                const formData = new FormData(this);
+                const csrfToken = this.querySelector('[name=csrfmiddlewaretoken]').value;
+                const publicationId = this.id.split('-').pop(); // Извлекаем publication.id из id формы
+
+                fetch(this.action, {
+                    method: 'POST',
+                    headers: {
+                        'X-CSRFToken': csrfToken,
+                        'X-Requested-With': 'XMLHttpRequest'
+                    },
+                    body: formData
+                })
+                .then(response => response.json())
+                .then(data => {
+                    if (data.success) {
+                        alert('Скарга успішно надіслана!');
+                        toggleCard(`complainCard-${publicationId}`); // Закрываем карточку
+                        form.reset(); // Очищаем форму
+                    } else {
+                        alert('Помилка при відправці скарги: ' + (data.error || 'Невідома помилка'));
+                    }
+                })
+                .catch(error => {
+                    console.error('Ошибка:', error);
+                    alert('Помилка при відправці скарги');
+                });
             });
         });
     });

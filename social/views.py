@@ -13,7 +13,7 @@ from django.views.generic import CreateView, DetailView, ListView, View
 import core.settings
 from chat.models import ChatInvitation
 from . import models
-from .forms import CommentForm, ProfileForm, PublicationForm, UserEditForm, UserForm
+from .forms import CommentForm, ProfileForm, PublicationForm, UserEditForm, UserForm, SetAdminForm, SetComplainForm
 
 # Create your views here.
 
@@ -22,7 +22,17 @@ def notification(request):
     invites = ChatInvitation.objects.filter(to_user=user, accepted=None)
     notifications = request.user.notifications.order_by('-created_at')
     notifications.filter(is_read=False).update(is_read=True)
-    return render(request, 'social/notification.html', {'invites': invites, 'notifications': notifications})
+    complaint = models.Complaint.objects.filter(accepted=None).order_by('-created_at')  # Исправлено здесь
+    return render(request, 'social/notification.html', {'invites': invites, 'notifications': notifications, 'complaint': complaint})
+
+def respond_to_complaint(request, complaint_id, action):
+    complaint = get_object_or_404(models.Complaint, id=complaint_id)
+
+    if action == 'accept':
+        complaint.accept_complaint()
+    elif action == 'reject':
+        complaint.reject_complaint()
+    return redirect(request.META.get('HTTP_REFERER', '/'))
 
 class CommentCreateView(LoginRequiredMixin, CreateView):
     model = models.Comment
@@ -144,6 +154,7 @@ class ProfileDetailView(DetailView):
         context['followers'] = user.profile.followers.all()
         context['following'] = User.objects.filter(profile__followers=user)
         context['form'] = CommentForm()
+        context['complaint'] = SetComplainForm()
         context['publications'] = publications
         return context
 
@@ -170,6 +181,7 @@ class HomeView(LoginRequiredMixin, ListView):
             for pub in context['home']:
                 pub.liked_by_user = pub.is_liked_by(user)
         context['form'] = CommentForm()
+        context['complaint'] = SetComplainForm()
         context['followers'] = user.profile.followers.all()
         context['following'] = User.objects.filter(profile__followers=user)
         context['recomended'] = User.objects.exclude(profile__followers=user).exclude(id=user.id)
@@ -196,6 +208,21 @@ def like_publ(request, publication_id):
         'liked': liked,
         'likes_count': target_publication.likes_count()
     })
+
+@require_POST
+@login_required
+def add_complaint(request, publication_id):
+    target_publication = get_object_or_404(models.Publication, pk=publication_id)
+    user = request.user
+
+    form = SetComplainForm(request.POST)
+    if form.is_valid():
+        complaint = form.save(commit=False)
+        complaint.user = user
+        complaint.publication = target_publication
+        complaint.save()
+        messages.success(request, "Ваша скарга успішно відправлена!")
+    return redirect(request.META.get('HTTP_REFERER', '/'))
 
 
 @login_required
@@ -281,7 +308,30 @@ def post_data(request, post_id):
     })
 
 def setting_page(request):
-    return render(request, 'social/settings_page.html')
+    set_admin_form = SetAdminForm()
+    message = None
+
+    if request.method == 'POST':
+        set_admin_form = SetAdminForm(request.POST, user=request.user)
+
+        if set_admin_form.is_valid():
+            userr = set_admin_form.cleaned_data['user']
+            admin_group = Group.objects.get(name='Адміністратор')
+            user_group = Group.objects.get(name='Користувач')
+
+            if admin_group in userr.groups.all():
+                userr.groups.remove(admin_group)
+                userr.groups.add(user_group)
+                message = f'{userr.username} переведено в групу "Користувач".'
+            else:
+                userr.groups.clear()
+                userr.groups.add(admin_group)
+                message = f'{userr.username} додано до групи "Адміністратор".'
+            set_admin_form = SetAdminForm(user=request.user)
+        else:
+            set_admin_form = SetAdminForm(user=request.user)
+
+    return render(request, 'social/settings_page.html', {'set_admin_form': set_admin_form, 'message': message})
 
 
 def base_context(request):
