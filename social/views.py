@@ -22,7 +22,7 @@ def notification(request):
     invites = ChatInvitation.objects.filter(to_user=user, accepted=None)
     notifications = request.user.notifications.order_by('-created_at')
     notifications.filter(is_read=False).update(is_read=True)
-    complaint = models.Complaint.objects.filter(accepted=None).order_by('-created_at')  # Исправлено здесь
+    complaint = models.Complaint.objects.filter(accepted=None).order_by('-created_at')
     return render(request, 'social/notification.html', {'invites': invites, 'notifications': notifications, 'complaint': complaint})
 
 def respond_to_complaint(request, complaint_id, action):
@@ -51,11 +51,11 @@ class CommentCreateView(LoginRequiredMixin, CreateView):
         target_user = publication.profile.user
 
         models.Notification.objects.create(
-                recipient=target_user,
-                sender=self.request.user,
-                message=f"{self.request.user.username} залишив коментар до вашої публікації"
-            )
-        
+            recipient=target_user,
+            sender=self.request.user,
+            message=f"{self.request.user.username} залишив коментар до вашої публікації"
+        )
+
         return JsonResponse({
             'success': True,
             'username': comment.user.user.username,
@@ -96,10 +96,8 @@ class PublicationCreateView(LoginRequiredMixin, CreateView):
                 message=f"{self.request.user.username} створив нову публікацію"
             )
 
-
         messages.success(self.request, "Публікацію створено!")
         return redirect('home')
-    
     def form_invalid(self, form):
         return self.render_to_response(self.get_context_data(form=form))
 
@@ -111,7 +109,7 @@ class ProfileUpdateView(LoginRequiredMixin, View):
             'user_form': user_form,
             'profile_form': profile_form
         })
-    
+
     def post(self, request):
         user_form = UserEditForm(request.POST, instance=request.user)
         profile_form = ProfileForm(request.POST, request.FILES, instance=request.user.profile)
@@ -137,7 +135,8 @@ class SearchListView(LoginRequiredMixin, ListView):
         if query:
             return User.objects.filter(Q(username__icontains=query) | Q(email__icontains=query))
         return User.objects.all()
-    
+
+
 class ProfileDetailView(DetailView):
     model = User
     template_name = 'social/profile_about.html'
@@ -158,6 +157,7 @@ class ProfileDetailView(DetailView):
         context['publications'] = publications
         return context
 
+
 class HomeView(LoginRequiredMixin, ListView):
     model = models.Publication
     template_name = 'social/home.html'
@@ -165,7 +165,6 @@ class HomeView(LoginRequiredMixin, ListView):
 
     def get_queryset(self):
         user = self.request.user
-        
         following_profiles = models.Profile.objects.filter(followers=user)
         followed_publications = models.Publication.objects.filter(profile__in=following_profiles)
         other_publications = models.Publication.objects.exclude(profile__in=following_profiles)
@@ -192,6 +191,7 @@ class HomeView(LoginRequiredMixin, ListView):
 
         return context
 
+
 @require_POST
 @login_required
 def like_publ(request, publication_id):
@@ -208,6 +208,7 @@ def like_publ(request, publication_id):
         'liked': liked,
         'likes_count': target_publication.likes_count()
     })
+
 
 @require_POST
 @login_required
@@ -244,6 +245,7 @@ def follow(request, username):
 
     return redirect('profile', username=target_user.username)
 
+
 class AccountAboutView(LoginRequiredMixin, DetailView):
     model = User
     template_name = 'social/account.html'
@@ -251,7 +253,7 @@ class AccountAboutView(LoginRequiredMixin, DetailView):
 
     def get_object(self):
         return self.request.user
-    
+
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)
         user = self.request.user
@@ -264,6 +266,7 @@ class AccountAboutView(LoginRequiredMixin, DetailView):
         context['following'] = User.objects.filter(profile__followers=user)
         return context
 
+
 def add_user(request):
     if request.method == 'POST':
         form = UserForm(request.POST)
@@ -271,7 +274,6 @@ def add_user(request):
             try:
                 user = form.save()
                 request.session['username'] = user.username
-                
                 if user.email in core.settings.ADMIN_EMAIL:
                     group = Group.objects.get(name="Адміністратор")
                     user.groups.add(group)
@@ -287,8 +289,8 @@ def add_user(request):
             messages.error(request, 'Виникла помилка. Перевірте введені дані.')
     else:
         form = UserForm()
-    
     return render(request, 'social/register.html', {'form': form})
+
 
 def post_data(request, post_id):
     publication = get_object_or_404(models.Publication, id=post_id)
@@ -306,6 +308,7 @@ def post_data(request, post_id):
             for c in comments
         ]
     })
+
 
 def setting_page(request):
     set_admin_form = SetAdminForm()
