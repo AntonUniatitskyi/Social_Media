@@ -16,13 +16,15 @@
     <script type="module" src="https://unpkg.com/ionicons@7.1.0/dist/ionicons/ionicons.esm.js"></script>
     <script nomodule src="https://unpkg.com/ionicons@7.1.0/dist/ionicons/ionicons.js"></script>
     <link href="https://fonts.googleapis.com/css2?family=Pacifico&display=swap" rel="stylesheet">
-    
+
     <script src="https://unpkg.com/htmx.org@1.9.5"></script>
     <script src="https://unpkg.com/htmx.org/dist/ext/ws.js"></script>
     <script src="https://unpkg.com/hyperscript.org@0.9.14"></script>
     <script defer src="https://cdn.jsdelivr.net/npm/alpinejs@3.x.x/dist/cdn.min.js"></script>
+    <!-- Alpine.js (добавь в <head> вашего шаблона) -->
+    <script defer src="https://unpkg.com/alpinejs@3.x.x/dist/cdn.min.js"></script>
 
-    
+
     <!-- Swiper CSS -->
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/swiper@11/swiper-bundle.min.css" />
 
@@ -32,23 +34,29 @@
     {% load static %}
     <link rel="stylesheet" href="{% static 'social/style.css' %}">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+    {% load widget_tweaks %}
 </head>
 
 <body class="d-flex flex-column min-vh-100 {% if request.path == '/login/' or request.path == '/register/' %}page-register{% endif %}">
     {% if messages %}
         <div class="fixed top-4 left-1/2 transform -translate-x-1/2 z-50 space-y-2 w-full max-w-md px-4">
             {% for message in messages %}
-                <div class="
-                    px-6 py-4 rounded-xl shadow-lg text-lg font-semibold text-center
-                    {% if message.tags == 'success' %} bg-green-500 text-white
-                    {% elif message.tags == 'error' %} bg-red-500 text-white
-                    {% elif message.tags == 'warning' %} bg-yellow-400 text-black
-                    {% elif message.tags == 'info' %} bg-blue-500 text-white
-                    {% else %} bg-gray-500 text-white
-                    {% endif %}
-                    transition-all duration-300"
-                >
-                    {{ message }}
+
+                <div class="notification-animate px-6 py-4 rounded-xl shadow-lg text-lg font-semibold text-center
+                transition-all duration-300">
+                    <div class="nheader">
+                        <span class="title">Нове сповіщення</span>
+                    </div>
+                    <div class="detail">
+                        <i class="bi bi-cart notif-i
+                        {% if message.tags == 'success' %} bg-green-400 text-white
+                        {% elif message.tags == 'error' %} bg-red-500 text-white
+                        {% elif message.tags == 'warning' %} bg-yellow-400 text-black
+                        {% elif message.tags == 'info' %} bg-blue-500 text-white
+                        {% else %} bg-gray-500 text-white
+                        {% endif %}"></i>
+                        <span class="ntext">{{ message }}</span>
+                    </div>
                 </div>
             {% endfor %}
         </div>
@@ -63,38 +71,28 @@
         </script>
     {% endif %}
     {% if not hide_header %}
-        <header class="w-full border-b py-3 px-4 md:px-8">
-            <div class="flex flex-col md:flex-row items-center justify-between gap-3">
-                <!-- Логотип + Название + Аватарка (мобильный view: вместе) -->
-                <div class="flex w-full md:w-auto items-center justify-between">
-                    <div class="flex items-center gap-1 -ml-3">
-                        <img src="/media/avatars/logo.png" alt="Logo" class="h-10 w-auto">
-                        <a href="{% url 'home' %}" class="text-2xl font-semibold text-gray-800" style="font-family: 'Pacifico', cursive;">
-                        Roon</a>
-                    </div>
-    
-                    <!-- Аватар справа на мобилке -->
-                    <div class="md:hidden">
-                        {% if user.is_authenticated %}
-                            {% if user.profile.avatar %}
-                                <a href="{% url 'account' %}">
-                                <img src="{{ user.profile.avatar.url }}" class="h-10 w-10 rounded-full object-cover" alt="Avatar">
-                                </a>
-                            {% else %}
-                                <a href="{% url 'account' %}">
-                                <img src="/media/avatars/default-avatar.png" class="h-10 w-10 rounded-full object-cover" alt="Default Avatar">
-                                </a>
-                            {% endif %}
-                        {% else %}
-                            <a href="{% url 'login' %}" class="px-3 py-1 border border-gray-400 rounded text-sm text-gray-700 hover:bg-gray-100">
-                                Увійти
-                            </a>
-                        {% endif %}
-                    </div>
+        <div class="container mx-auto my-4 px-2 sm:px-4">
+            <header x-data="{ open: false, lastScroll: 0, showHeader: true }"
+                    x-init="lastScroll = window.scrollY"
+                    @scroll.window="let currentScroll = window.scrollY; showHeader = currentScroll < lastScroll || currentScroll < 10; lastScroll = currentScroll;"
+                    x-bind:class="showHeader ? 'translate-y-0' : '-translate-y-full'"
+                    class="shadow-lg w-full max-w-3xl mx-auto py-3 px-4 sm:px-6 md:px-8 flex items-center justify-between flex-wrap gap-3 rounded-2xl backdrop-blur-sm bg-white/20 border border-gray-200/50 transition-transform duration-300 fixed top-3 left-0 right-0 z-50">
+
+                <!-- Лого -->
+                <div class="flex items-center gap-2 flex-shrink-0">
+                    <img src="/media/avatars/logo.png" alt="Logo" class="h-8 sm:h-10 w-auto">
+                    <a href="{% url 'home' %}" class="text-xl sm:text-2xl font-semibold text-gray-800" style="font-family: 'Pacifico', cursive;">
+                        Roon
+                    </a>
                 </div>
-    
+
+                <!-- Кнопка-бургер -->
+                <button @click="open = !open" class="sm:hidden text-gray-700 text-3xl focus:outline-none">
+                    <ion-icon :name="open ? 'close' : 'menu'"></ion-icon>
+                </button>
+
                 <!-- Навигация -->
-                <nav class="flex gap-6 text-xl text-gray-700">
+                <nav class="hidden sm:flex gap-6 text-xl text-gray-700" style="margin-left: -50px;">
                     <a href="{% url 'home' %}">
                         {% if request.resolver_match.url_name == 'home' %}
                             <ion-icon name="home" class="text-2xl"></ion-icon>
@@ -114,7 +112,6 @@
                             <ion-icon name="chatbubbles" class="text-2xl"></ion-icon>
                         {% else %}
                             <ion-icon name="chatbubbles-outline" class="text-2xl"></ion-icon>
-                            
                         {% endif %}
                     </a>
                     <a href="{% url 'search' %}">
@@ -124,42 +121,56 @@
                             <ion-icon name="search-outline" class="text-2xl"></ion-icon>
                         {% endif %}
                     </a>
-                    <a href="{% url 'notification' %}">
+                    <a href="{% url 'notification' %}" class="relative">
                         {% if request.resolver_match.url_name == 'notification' %}
-                            <ion-icon name="chatbox"></ion-icon>
+                            <ion-icon name="chatbox" class="text-2xl"></ion-icon>
                         {% else %}
-                            <ion-icon name="chatbox-outline"></ion-icon>
+                            <ion-icon name="chatbox-outline" class="text-2xl"></ion-icon>
                         {% endif %}
-                    
                         {% if unread_notifications > 0 %}
-                            <span class="badge-m">{{ unread_notifications }}</span>
+                            <span class="absolute top-0 right-0 bg-red-500 text-white text-xs rounded-full px-1">{{ unread_notifications }}</span>
                         {% endif %}
                     </a>
                 </nav>
-    
-                <div class="hidden md:block">
+
+                <!-- Аватар -->
+                <div class="flex-shrink-0 hidden sm:block">
                     {% if user.is_authenticated %}
-                        {% if user.profile.avatar %}
-                            <a href="{% url 'account' %}">
-                                <img src="{{ user.profile.avatar.url }}" class="h-10 w-10 rounded-full object-cover" alt="Avatar">
-                            </a>
-                        {% else %}
-                            <a href="{% url 'account' %}">
-                                <img src="/media/avatars/default-avatar.png" class="h-10 w-10 rounded-full object-cover" alt="Default Avatar">
-                            </a>
-                        {% endif %}
+                        <a href="{% url 'account' %}">
+                            <img src="{{ user.profile.get_avatar_url }}" class="h-9 w-9 rounded-full object-cover" alt="Avatar">
+                        </a>
                     {% else %}
-                        <a href="{% url 'login' %}" class="px-4 py-2 border border-gray-400 rounded-lg text-sm text-gray-700 hover:bg-gray-100">
-                        Увійти
+                        <a href="{% url 'login' %}" class="px-3 py-1 border border-gray-400 rounded-lg text-sm text-gray-700 hover:bg-gray-100">
+                            Увійти
                         </a>
                     {% endif %}
                 </div>
-            </div>
-        </header>
-    {% endif %}
-  
 
-<div class="container flex-grow-1">
+                <!-- Выпадающее меню (мобильное) -->
+                <div x-show="open" class="w-full flex flex-col gap-4 mt-4 sm:hidden text-lg text-gray-700">
+                    <a href="{% url 'home' %}">Головна</a>
+                    <a href="{% url 'publ_add' %}">Додати</a>
+                    <a href="{% url 'chat_list' %}">Чати</a>
+                    <a href="{% url 'search' %}">Пошук</a>
+                    <a href="{% url 'notification' %}">Сповіщення
+                        {% if unread_notifications > 0 %}
+                            <span class="ml-1 bg-red-500 text-white text-xs rounded-full px-1">{{ unread_notifications }}</span>
+                        {% endif %}
+                    </a>
+                    {% if user.is_authenticated %}
+                        <a href="{% url 'account' %}">Профіль</a>
+                    {% else %}
+                        <a href="{% url 'login' %}">Увійти</a>
+                    {% endif %}
+                </div>
+            </header>
+        </div>
+
+
+    {% endif %}
+
+
+<div class="container flex-grow-1" style="margin-top: 50px;">
     {% block content %}
     {% endblock content %}
 </div>
@@ -168,8 +179,8 @@
     <div class="container">
         <footer class="d-flex flex-wrap justify-content-between align-items-center py-2 my-1 border-top">
         <p class="col-md-4 mb-0 text-body-secondary">© 2025 Anton Unyatickii</p>
-    
-    
+
+
         <ul class="nav col-md-4 justify-content-end">
             <li class="nav-item"><a href="{% url 'home' %}" class="nav-link px-2 text-body-secondary">Головна</a></li>
             <!-- <li class="nav-item"><a href="#" class="nav-link px-2 text-body-secondary">Форум</a></li> -->

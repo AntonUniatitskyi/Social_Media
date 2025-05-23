@@ -14,23 +14,30 @@
             <ul class="space-y-6">
                 {% for invite in invites %}
                     {% if invite.accepted is None %}
-                        <li class="bg-white border border-gray-200 rounded-2xl shadow-md hover:shadow-xl transition duration-300 p-6">
-                            <div class="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-6">
+                        <li class="complain-card border border-gray-200 rounded-2xl shadow-md hover:shadow-xl transition duration-300 p-4">
+                            <div class="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-2 sm:gap-3">
+
                                 <div class="flex-1 text-gray-700">
-                                    <p class="text-base leading-relaxed">
+                                    <p class="text-sm sm:text-base leading-relaxed">
                                         <span class="font-semibold text-gray-900">{{ invite.from_user.username }}</span>
                                         запросив тебе у групу
                                         <span class="font-semibold text-blue-600">{{ invite.chat_group.group_chat_name }}</span>.
                                     </p>
                                 </div>
 
-                                <div class="flex gap-4">
+                                <div class="flex flex-col sm:flex-row gap-2 sm:gap-3 w-full sm:w-auto">
                                     <a href="{% url 'respond_to_invite' invite.id 'accept' %}"
-                                       class="inline-flex items-center gap-1 px-5 py-3 text-sm font-semibold bg-green-500 text-white rounded-xl hover:bg-green-600 transition shadow-md">
+                                    class="inline-flex justify-center items-center px-3 py-2
+                                    sm:px-4 sm:py-2.5 text-sm font-semibold bg-green-500
+                                    text-white rounded-xl hover:bg-green-600 transition
+                                    duration-200 shadow-sm w-full sm:w-auto text-center">
                                         ✅ Прийняти
                                     </a>
                                     <a href="{% url 'respond_to_invite' invite.id 'reject' %}"
-                                       class="inline-flex items-center gap-1 px-5 py-3 text-sm font-semibold bg-red-500 text-white rounded-xl hover:bg-red-600 transition shadow-md">
+                                    class="inline-flex justify-center items-center px-3 py-2
+                                    sm:px-4 sm:py-2.5 text-sm font-semibold bg-red-500 text-white
+                                    rounded-xl hover:bg-red-600 transition duration-200 shadow-sm
+                                    w-full sm:w-auto text-center">
                                         ❌ Відхилити
                                     </a>
                                 </div>
@@ -50,7 +57,7 @@
     <div>
         <h2 class="text-2xl font-bold mb-6 text-center text-gray-800">🔔 Сповіщення</h2>
         {% for notif in notifications %}
-            <div class="bg-white p-4 rounded-xl shadow-sm mb-4 {% if not notif.is_read %}border-l-4 border-blue-500{% endif %}">
+            <div class="complain-card p-4 rounded-xl shadow-sm mb-4 {% if not notif.is_read %}border-l-4 border-blue-500{% endif %}">
                 <p class="text-gray-700 text-lg {% if not notif.is_read %}font-semibold{% endif %}">{{ notif.message }}</p>
                 <small class="text-gray-500">{{ notif.created_at|naturaltime }}</small>
             </div>
@@ -66,7 +73,7 @@
             <h2 class="text-3xl font-semibold text-center text-gray-800 mb-8">Скарги</h2>
             {% if complaint %}
                 {% for comp in complaint %}
-                    <div class="bg-white p-6 rounded-xl shadow-lg mb-6 transition-all duration-300 hover:shadow-xl">
+                    <div class="complain-card p-6 rounded-xl shadow-lg mb-6 transition-all duration-300 hover:shadow-xl">
                         <div class="flex justify-between items-center mb-4">
                             <p class="text-xl font-semibold text-gray-800">{{ comp.user }}</p>
                             <small class="text-sm text-gray-500">{{ comp.created_at|naturaltime }}</small>
@@ -75,7 +82,7 @@
                         <p class="text-gray-700 text-lg mb-2"><strong>Причина:</strong> {{ comp.reason }}</p>
                         <p class="text-gray-600 text-base mb-4">{{ comp.text }}</p>
                         <div class="border-t border-gray-200 pt-4">
-                            <button data-complain-id="{{ comp.id }}" class="open-complain-modal px-4 py-2 bg-blue-500 text-white rounded-lg hover:bg-blue-600 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-opacity-50">
+                            <button data-complain-id="{{ comp.id }}" class="open-complain-modal px-4 py-2 gol-s text-black rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-opacity-50">
                                 Деталі
                             </button>
                         </div>
@@ -91,26 +98,40 @@
 <!-- Модалки выносим за контейнер -->
 {% if complaint %}
     {% for comp in complaint %}
-        <div id="complainCard-{{ comp.id }}" class="fixed inset-0 bg-gray-900 bg-opacity-50 hidden z-50 justify-center items-center">
-            <div class="bg-white p-6 rounded-xl w-96 relative">
+        <div id="complainCard-{{ comp.id }}" class="fixed inset-0 bg-gray-900 bg-opacity-50 hidden z-50 flex justify-center items-center">
+            <div class="complain-card rounded-xl w-[90vw] max-w-md max-h-[90vh] overflow-y-auto p-6 relative">
                 <div class="flex justify-between items-center mb-4">
-                    <h5 class="text-xl font-semibold text-gray-800">Поскаржитись</h5>
+                    <h5 class="text-xl font-semibold text-gray-800">Скарга</h5>
                     <button data-close-modal="{{ comp.id }}" class="text-gray-600 text-2xl leading-none">&times;</button>
                 </div>
+
                 <div class="text-gray-700 space-y-4">
                     <div><strong>Причина:</strong> {{ comp.reason }}</div>
                     <div><strong>Текст:</strong> {{ comp.text }}</div>
-                    <div>
-                        {% for media_item in comp.publication.media_items.all %}
-                            {% if media_item.is_image %}
-                                <img src="{{ media_item.file.url }}" alt="Image">
-                            {% elif media_item.is_video %}
-                                <video controls>
-                                    <source src="{{ media_item.file.url }}" type="video/mp4">
-                                </video>
-                            {% endif %}
-                        {% endfor %}
+
+                    <!-- Swiper -->
+                    <div class="swiper mySwiper">
+                        <div class="swiper-wrapper">
+                            {% for media_item in comp.publication.media_items.all %}
+                                <div class="swiper-slide complain-card">
+                                    {% if media_item.is_image %}
+                                        <img src="{{ media_item.file.url }}" alt="Image" class="w-full max-h-80 object-contain rounded-lg" />
+                                    {% elif media_item.is_video %}
+                                        <video controls class="w-full max-h-80 rounded-lg">
+                                            <source src="{{ media_item.file.url }}" type="video/mp4">
+                                        </video>
+                                    {% endif %}
+                                </div>
+                            {% endfor %}
+                        </div>
+
+                        <!-- Навигация -->
+                        <div class="swiper-button-next"></div>
+                        <div class="swiper-button-prev"></div>
+                        <div class="swiper-pagination"></div>
                     </div>
+
+                    <!-- Buttons -->
                     <div class="flex gap-4 mt-6">
                         <form method="post" action="{% url 'respond_complaint' comp.id 'accept' %}">
                             {% csrf_token %}
@@ -127,6 +148,7 @@
             </div>
         </div>
     {% endfor %}
+
 {% endif %}
 
 <!-- Скрипт управления модалками -->
@@ -164,4 +186,21 @@
         });
     });
 </script>
+
+<script>
+    document.addEventListener("DOMContentLoaded", function () {
+        new Swiper(".mySwiper", {
+            loop: true,
+            navigation: {
+                nextEl: ".swiper-button-next",
+                prevEl: ".swiper-button-prev",
+            },
+            pagination: {
+                el: ".swiper-pagination",
+                clickable: true,
+            },
+        });
+    });
+</script>
+
 {% endblock content %}

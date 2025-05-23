@@ -1,106 +1,122 @@
 {% extends "social/base.html" %}
+{% load widget_tweaks %}
 
 {% block title %}
 Редагування
 {% endblock %}
 
 {% block content %}
-
-<section class="registration-section">
-    <form method="post" enctype="multipart/form-data" class="form-container">
-        <h1 class="form-title">Редагування</h1>
+<section class="registration-section max-w-md mx-auto p-4 complain-card">
+    <form method="post" enctype="multipart/form-data" class="complain-card rounded-2xl p-6">
+        <h1 class="form-title text-2xl font-bold text-center text-gray-800">Редагування</h1>
         {% csrf_token %}
-        
-        <div class="inputbox-reg">
-            <label for="id_email">Пошта:</label>
-            {{ user_form.email }}
-            <ion-icon name="mail-outline" class="input-icon"></ion-icon>
-        </div>
-    
-        <div class="inputbox-reg">
-            <label for="id_username">Юзернейм</label>
-            {{ user_form.username }}
-            <ion-icon name="person-outline" class="input-icon"></ion-icon>
+        <div class="file-upload relative mt-3">
+            <div class="relative w-full space-y-3">
+                <div id="avatar-preview" class="flex flex-col items-center space-y-2 {% if not profile_form.instance.avatar %}hidden{% endif %}">
+                    <img src="{% if profile_form.instance.avatar %}{{ profile_form.instance.avatar.url }}{% endif %}" alt="Прев'ю образу" id="avatar-image" class="w-24 h-24 object-cover rounded-full border border-gray-300 shadow-sm">
+                    <button type="button" id="reset-avatar" class="px-3 py-1 text-sm text-red-500 bg-red-50 rounded-xl border border-red-200 hover:bg-red-100 transition">
+                        Скинути
+                    </button>
+                </div>
+                <input id="id_avatar" name="avatar" type="file" accept="image/*" class="hidden">
+
+                <!-- Custom Upload Button -->
+                <label for="id_avatar" class="flex items-center justify-between w-full px-4 py-2 bg-blue-50 text-blue-700 rounded-xl border border-blue-200 cursor-pointer hover:bg-blue-100 transition">
+                    <span id="file-name" class="truncate">Вибрати файл</span>
+                    <ion-icon name="cloud-upload-outline" class="text-2xl"></ion-icon>
+                </label>
+            </div>
+
         </div>
 
-        <div class="inputbox-reg">
-            <label for="id_uusername">Нік</label>
-            {{ profile_form.uusername }}
-            <ion-icon name="person-outline" class="input-icon"></ion-icon>
+        <div class="relative mt-3">
+            <label for="id_username" class="block text-sm font-medium text-gray-700 mb-1">Юзернейм</label>
+            {{ user_form.username|add_class:"w-full px-4 py-3 border border-gray-300 rounded-xl shadow-sm focus:ring-blue-400 focus:border-blue-400" }}
+            <ion-icon name="person-outline" class="absolute right-3 top-10 text-xl text-gray-400"></ion-icon>
         </div>
-    
-        <div class="inputbox-reg">
-            <label for="id_bio">Біо</label>
-            {{ profile_form.bio }}
-            <ion-icon name="information-outline" class="input-icon"></ion-icon>
+
+        <!-- Nickname -->
+        <div class="relative mt-3">
+            <label for="id_uusername" class="block text-sm font-medium text-gray-700 mb-1">Нік</label>
+            {{ profile_form.uusername|add_class:"w-full px-4 py-3 border border-gray-300 rounded-xl shadow-sm focus:ring-blue-400 focus:border-blue-400" }}
+            <ion-icon name="person-outline" class="absolute right-3 top-10 text-xl text-gray-400"></ion-icon>
         </div>
-    
-        <div class="inputbox-reg file-upload">
-            <label for="id_avatar">Образ</label>
-            <div class="file-container">
-                {{ profile_form.avatar }}
-                
-            </div>
-            <ion-icon name="image-outline" class="input-icon"></ion-icon>
+
+        <!-- Bio -->
+        <div class="relative mt-3">
+            <label for="id_bio" class="block text-sm font-medium text-gray-700 mb-1">Біо</label>
+            {{ profile_form.bio|add_class:"w-full px-4 py-3 border border-gray-300 rounded-xl shadow-sm focus:ring-blue-400 focus:border-blue-400" }}
+            <ion-icon name="information-outline" class="absolute right-3 top-10 text-xl text-gray-400"></ion-icon>
         </div>
-    
-        <button type="submit" class="btn-submit">Зберегти</button>
+
+        <!-- Email -->
+        <div class=" relative mt-3">
+            <label for="id_email" class="block text-sm font-medium text-gray-700 mb-1">Пошта:</label>
+            {{ user_form.email|add_class:"w-full px-4 py-3 border border-gray-300 rounded-xl shadow-sm focus:ring-blue-400 focus:border-blue-400" }}
+            <ion-icon name="mail-outline" class="absolute right-3 top-10 text-xl text-gray-400"></ion-icon>
+        </div>
+
+        <!-- Submit -->
+        <button type="submit" class="mt-3 w-full py-3 px-4 bg-green-500 text-white hover:bg-green-600 font-semibold rounded-xl shadow-md transition">
+            Зберегти
+        </button>
     </form>
 
+    <!-- Errors -->
     {% if user_form.errors or profile_form.errors %}
-        <ul class="error-list">
+        <ul class="error-list mt-6 space-y-2 text-red-500 text-sm">
             {% for field in user_form %}
                 {% for error in field.errors %}
-                    <li class="error-item">{{ field.label }}: {{ error }}</li>
+                    <li><strong>{{ field.label }}:</strong> {{ error }}</li>
                 {% endfor %}
             {% endfor %}
             {% for field in profile_form %}
                 {% for error in field.errors %}
-                    <li class="error-item">{{ field.label }}: {{ error }}</li>
+                    <li><strong>{{ field.label }}:</strong> {{ error }}</li>
                 {% endfor %}
             {% endfor %}
             {% for error in user_form.non_field_errors %}
-                <li class="error-item">{{ error }}</li>
+                <li>{{ error }}</li>
             {% endfor %}
             {% for error in profile_form.non_field_errors %}
-                <li class="error-item">{{ error }}</li>
+                <li>{{ error }}</li>
             {% endfor %}
         </ul>
     {% endif %}
 </section>
 
+<!-- JS for Preview and Reset -->
 <script>
-    document.addEventListener('DOMContentLoaded', function () {
-        {% for message in messages %}
-        Swal.fire({
-            title: '{{ message.tags|default:"Помилка"|capfirst }}',
-            text: '{{ message }}',
-            icon: '{% if "error" in message.tags %}error{% elif "success" in message.tags %}success{% else %}info{% endif %}',
-            showCancelButton: true,
-            confirmButtonText: '{% if "success" in message.tags %}Перейти до профілю{% else %}OK{% endif %}',
-            cancelButtonText: 'Відміна',
-        }).then((result) => {
-            {% if "success" in message.tags %}
-            if (result.isConfirmed) {
-                window.location.href = "{% url 'users:account' %}";
-            }
-            {% endif %}
-        });
-        {% endfor %}
+document.getElementById('id_avatar').addEventListener('change', function (e) {
+    const file = e.target.files[0];
+    const fileName = file ? file.name : 'Вибрати файл';
+    document.getElementById('file-name').textContent = fileName;
 
-        document.querySelectorAll('.toggle-password').forEach(toggle => {
-            const targetId = toggle.getAttribute('data-target');
-            const passwordField = document.querySelector(`#${targetId}`);
-            if (passwordField) {
-                toggle.addEventListener('click', function () {
-                    const type = passwordField.getAttribute('type') === 'password' ? 'text' : 'password';
-                    passwordField.setAttribute('type', type);
-                    this.querySelector('i').classList.toggle('fa-eye');
-                    this.querySelector('i').classList.toggle('fa-eye-slash');
-                });
-            }
-        });
-    });
+    const previewContainer = document.getElementById('avatar-preview');
+    const previewImage = document.getElementById('avatar-image');
+
+    if (file) {
+        const reader = new FileReader();
+        reader.onload = function (e) {
+            previewImage.src = e.target.result;
+            previewContainer.classList.remove('hidden');
+        };
+        reader.readAsDataURL(file);
+    } else {
+        previewContainer.classList.add('hidden');
+    }
+});
+
+// Reset button functionality
+document.getElementById('reset-avatar').addEventListener('click', function () {
+    const fileInput = document.getElementById('id_avatar');
+    const previewContainer = document.getElementById('avatar-preview');
+    const previewImage = document.getElementById('avatar-image');
+
+    fileInput.value = ''; // Reset input
+    previewImage.src = ''; // Clear preview image
+    previewContainer.classList.add('hidden');
+    document.getElementById('file-name').textContent = 'Вибрати файл';
+});
 </script>
-
 {% endblock %}

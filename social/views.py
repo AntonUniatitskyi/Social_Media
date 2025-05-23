@@ -7,7 +7,7 @@ from django.contrib.auth.models import Group, User
 from django.db import IntegrityError
 from django.db.models import Q
 from django.http import JsonResponse
-from django.shortcuts import get_object_or_404, redirect, render
+from django.shortcuts import get_object_or_404, redirect, render, HttpResponseRedirect
 from django.views.decorators.http import require_POST
 from django.views.generic import CreateView, DetailView, ListView, View
 import core.settings
@@ -16,6 +16,37 @@ from . import models
 from .forms import CommentForm, ProfileForm, PublicationForm, UserEditForm, UserForm, SetAdminForm, SetComplainForm
 
 # Create your views here.
+@login_required
+def delete_publication(request, pk):
+    publication = get_object_or_404(models.Publication, pk=pk)
+    if request.user == publication.profile.user:
+        publication.delete()
+        messages.success(request, "Публікацію видалено!")
+        return redirect('account')
+    else:
+        messages.error(request, "Ви не можете видалити цю публікацію.")
+        return redirect('account')
+
+def redirect_to_profile_publication(request, pk):
+    publication = get_object_or_404(models.Publication, pk=pk)
+    profile_username = publication.profile.user.username
+    profile_url = f"/profile/{profile_username}/#publication-{pk}"
+    return HttpResponseRedirect(profile_url)
+
+@login_required
+def get_save_publication(request):
+    if request.method == 'POST':
+        publ_id = request.POST.get('publication_id')
+        publication = get_object_or_404(models.Publication, id=publ_id)
+
+        if request.user in publication.saved.all():
+            publication.saved.remove(request.user)
+            saved = False
+        else:
+            publication.saved.add(request.user)
+            saved = True
+        return JsonResponse({'saved': saved})
+
 
 def notification(request):
     user = request.user
@@ -150,6 +181,7 @@ class ProfileDetailView(DetailView):
         publications = user.profile.publications.all()
         for pub in publications:
             pub.liked_by_user = pub.is_liked_by(self.request.user)
+            pub.saved_by_user = pub.is_saved_by(self.request.user)
         context['followers'] = user.profile.followers.all()
         context['following'] = User.objects.filter(profile__followers=user)
         context['form'] = CommentForm()
@@ -179,6 +211,7 @@ class HomeView(LoginRequiredMixin, ListView):
         if user.is_authenticated:
             for pub in context['home']:
                 pub.liked_by_user = pub.is_liked_by(user)
+                pub.saved_by_user = pub.is_saved_by(self.request.user)
         context['form'] = CommentForm()
         context['complaint'] = SetComplainForm()
         context['followers'] = user.profile.followers.all()
@@ -245,6 +278,20 @@ def follow(request, username):
 
     return redirect('profile', username=target_user.username)
 
+class SavedPublicationView(LoginRequiredMixin, ListView):
+    model = models.Publication
+    template_name = 'social/saved_publ.html'
+    context_object_name = 'publications'
+
+    def get_queryset(self):
+        queryset = self.request.user.saved_publications.all() \
+            .select_related('profile') \
+            .prefetch_related('media_items')
+
+        for publication in queryset:
+            publication.is_liked_by_user = publication.is_liked_by(self.request.user)
+
+        return queryset
 
 class AccountAboutView(LoginRequiredMixin, DetailView):
     model = User
@@ -260,10 +307,12 @@ class AccountAboutView(LoginRequiredMixin, DetailView):
         publications = user.profile.publications.all()
         for pub in publications:
             pub.liked_by_user = pub.is_liked_by(self.request.user)
+            pub.saved_by_user = pub.is_saved_by(self.request.user)
         context['publications'] = publications
         context['form'] = CommentForm()
         context['followers'] = user.profile.followers.all()
         context['following'] = User.objects.filter(profile__followers=user)
+        context['complaint'] = SetComplainForm()
         return context
 
 

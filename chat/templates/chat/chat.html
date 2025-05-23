@@ -5,7 +5,7 @@
 {% endblock title %}
 
 {% block content %}
-<wrapper class="block max-w-3xl mx-auto my-6 px-4 sm:px-6">
+<div class="block max-w-3xl mx-auto my-6 px-4 sm:px-6">
     {% if chat_group.group_chat_name %}
         <div class="flex justify-between items-center">
             <h2 class="text-2xl font-bold text-gray-800 mb-2 truncate">{{ chat_group.group_chat_name }}</h2>
@@ -20,11 +20,11 @@
             {% endif %}
         </div>
     {% endif %}
-    
-    <div id="chat_window" class="h-[45rem] flex flex-col rounded-2xl shadow-2xl relative p-1">
+
+    <div id="chat_window" class="h-[45rem] complain-card flex flex-col rounded-2xl shadow-2xl relative p-1">
         <div class="flex justify-center text-emerald-400 p-2 sticky top-0 z-10">
             {% if other_user %}
-                <a href="{% url 'chat_list' %}" class="absolute left-4 top-1/2 -translate-y-1/2"><ion-icon name="arrow-back" class="text-2xl text-black"></ion-icon></a>
+                <a href="{% url 'chat_list' %}" class="absolute left-4 top-1/2 -translate-y-1/2 z-10"><ion-icon name="arrow-back" class="text-2xl text-black"></ion-icon></a>
                 <a href="{% url 'profile' other_user.username %}">
                     <div class="flex items-center gap-2 p-4 sticky top-0 z-10">
                         <div class="flex items-center gap-1">
@@ -40,10 +40,11 @@
                     </div>
                 </a>
             {% elif chat_group.group_chat_name %}
-                <a href="{% url 'chat_list' %}" class="absolute left-4 top-1/2 -translate-y-1/2"><ion-icon name="arrow-back" class="text-2xl text-black"></ion-icon></a>
-                <ul id="groupchat-members" class="flex gap-4 flex-wrap justify-start">
+                <a href="{% url 'chat_list' %}" class="absolute left-4 top-1/2 -translate-y-1/2 z-10"><ion-icon name="arrow-back" class="text-2xl text-black"></ion-icon></a>
+                <ul id="groupchat-members" class="ml-10 flex gap-2 flex-wrap flex-nowrap
+                overflow-x-auto max-w-[calc(100%-2rem)] whitespace-nowrap relative">
                     {% for member in chat_group.members.all %}
-                        <li class="flex justify-center items-center gap-2">
+                        <li class="flex justify-center items-center">
                             {% if member.username == user.username %}
                                 <a href="{% url 'account' %}" class="flex flex-col text-gray-400 items-center justify-center w-20 gap-2">
                                     <img src="{{ member.profile.get_avatar_url }}" class="w-14 h-14 rounded-full object-cover">
@@ -59,14 +60,13 @@
                     {% endfor %}
                 </ul>
             {% else %}
-                <a href="{% url 'chat_list' %}" class="absolute left-4 top-1/2 -translate-y-1/2"><ion-icon name="arrow-back" class="text-2xl text-black"></ion-icon></a>
+                <a href="{% url 'chat_list' %}" class="absolute left-4 top-1/2 -translate-y-1/2 z-10"><ion-icon name="arrow-back" class="text-2xl text-black"></ion-icon></a>
                 <div class="flex items-center gap-1">
                     <div id="online-icon"></div>
                     <span id="online-count" class="pr-1"></span>online
                 </div>
             {% endif %}
         </div>
-        
         <div id="chat_container" class="overflow-y-auto grow p-2">
             <ul id="chat_messages" class="flex flex-col justify-end gap-2">
                 {% for message in chat_messages reversed %}
@@ -74,8 +74,7 @@
                 {% endfor %}
             </ul>
         </div>
-        
-        <div class="sticky bottom-0 z-10 p-2 bg-white border-t border-gray-200">
+        <div class="sticky bottom-0 z-10 p-2 bg-white border-t border-gray-200 rounded-2xl">
             <div class="flex flex-col gap-3 items-center rounded-xl px-2 py-2">
                 <form id="chat_message_form" class="w-full"
                 hx-ext="ws"
@@ -120,13 +119,13 @@
             </div>
         </div>
     </div>
-    
+
     {% if chat_group.members.exists and chat_group.is_private == False %}
     <a href="{% url 'chatroom_leave' chat_group.group_name %}">
             {% include 'chat/partials/modal_chat_leave.html' %}
         </a>
     {% endif %}
-</wrapper>
+</divr>
 
 <script>
     function scrollToBottom(time=0) {
@@ -137,7 +136,7 @@
             }
         }, time);
     }
-    
+
     scrollToBottom();
 </script>
 {% endblock content %}

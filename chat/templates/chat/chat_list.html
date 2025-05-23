@@ -14,15 +14,15 @@
     <ul class="space-y-2">
         <!-- Публічний чат -->
         <li>
-            <a href="{% url 'chat_home' %}" 
-               class="flex items-center justify-between p-4 bg-blue-50 hover:bg-blue-100 rounded-xl shadow-sm transition">
-                <span class="text-blue-900 font-medium">🌐 Публічний чат</span>
+            <a href="{% url 'chat_home' %}"
+               class="flex items-center justify-between gol-s p-4 rounded-xl shadow-sm transition">
+                <span class="text-gray-800 font-medium">🌐 Публічний чат</span>
             </a>
         </li>
         <li>
-            <a href="{% url 'favorites_chat' %}" 
-               class="flex items-center justify-between p-4 bg-blue-50 hover:bg-blue-100 rounded-xl shadow-sm transition">
-                <span class="text-blue-900 font-medium">⭐ Вибране</span>
+            <a href="{% url 'favorites_chat' %}"
+               class="flex items-center justify-between gol-s p-4 rounded-xl shadow-sm transition">
+                <span class="text-gray-800 font-medium">⭐ Вибране</span>
             </a>
         </li>
         {% with "Вибране ("|add:user.username|add:")" as favorites_name %}
@@ -31,7 +31,7 @@
             {% for chatroom in user.chat_groups.all %}
                 {% if chatroom.group_chat_name and chatroom.group_chat_name != favorites_name %}
                     <li>
-                        <a href="{% url 'chatroom' chatroom.group_name %}" 
+                        <a href="{% url 'chatroom' chatroom.group_name %}"
                         class="flex items-center justify-between p-4 home-card hover:bg-gray-100 rounded-xl shadow-sm transition">
                             <span class="text-gray-800 font-medium" style="text-decoration: none;">
                                 {{ chatroom.group_chat_name|slice:":30" }}
@@ -50,18 +50,18 @@
                 {% for member in chatroom.members.all %}
                     {% if member != user %}
                         <li>
-                            <a href="{% url 'chatroom' chatroom.group_name %}" 
+                            <a href="{% url 'chatroom' chatroom.group_name %}"
                                class="flex items-center justify-between p-4 home-card hover:bg-gray-100 rounded-xl shadow-sm transition">
                                 <div class="flex items-center gap-3">
-                                    <img src="{{ member.profile.get_avatar_url }}" 
-                                         alt="{{ member.profile.user.username }}" 
+                                    <img src="{{ member.profile.get_avatar_url }}"
+                                         alt="{{ member.profile.user.username }}"
                                          class="w-10 h-10 rounded-full object-cover">
                                     <div class="text-gray-800 font-medium">
                                         {{ member.profile.user.username }}
                                     </div>
                                 </div>
                             </a>
-                        </li>   
+                        </li>
                     {% endif %}
                 {% endfor %}
             {% endif %}

@@ -28,7 +28,7 @@ class PublicationForm(forms.ModelForm):
                 'id': 'id_text',
                 'rows': 2,
                 'placeholder': 'Підпис',
-                'class': 'w-full px-4 py-2 border border-gray-300 rounded-xl focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent shadow-sm'
+                # 'class': 'publ-text w-full px-4 py-2 border border-gray-300 rounded-xl focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent shadow-sm'
             }),
         }
     def __init__(self, *args, **kwargs):
@@ -108,9 +108,9 @@ class SetAdminForm(Form):
         super().__init__(*args, **kwargs)
         if user:
             self.fields['user'].queryset = User.objects.exclude(id=user.id)
-    
+
     user = ModelChoiceField(
-        queryset=User.objects.all(), 
+        queryset=User.objects.all(),
         label="Оберіть користувача",
         widget=Select(attrs={'class': 'form-select'})
     )
@@ -122,12 +122,15 @@ class SetComplainForm(forms.ModelForm):
         fields = ["reason", "text"]
         widgets = {
             'reason': TextInput(attrs={
-                'class': 'form-control'
+                'class': 'form-control',
+                'style': 'background-color: #e8e3ddf1; border-color: black',
+
             }),
             'text': Textarea(attrs={
                 'rows': 4,
                 'placeholder': 'Детальніше про скаргу',
-                'class': 'form-control'
+                'class': 'form-control',
+                'style': 'background-color: #e8e3ddf1; border-color: black',
                 }
                 )
         }

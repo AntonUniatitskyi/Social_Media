@@ -5,61 +5,71 @@
 {% endblock title %}
 
 {% block content %}
-    <div class="container search-box">
-        <input type="text" id="search-input" name="q" placeholder="Пошук за username" autocomplete="off" class="mt-3">
-        <ul role="list" id="search-results" class="divide-y divide-gray-100">
-            {% for account in accounts_list %}
-                {% if account.username == user.username %}
-                    <a href="{% url 'account' %}" class="block hover:bg-gray-100 transition rounded-md">
-                {% else %}
-                    <a href="{% url 'profile' account.username %}" class="block hover:bg-gray-100 transition rounded-md">
-                {% endif %}
-                    <li class="flex justify-between gap-x-6 py-2">
-                        <div class="flex min-w-0 gap-x-4">
-                            <img src="{{ account.profile.get_avatar_url }}" alt="Аватар" class="avatar-profile size-12 flex-none rounded-full bg-gray-50">
-                            <div class="min-w-0 flex-auto">
-                                <p class="text-sm/6 font-semibold text-gray-900">{{ account.username }}</p>
-                                {% if account.profile.uusername %}
-                                    <p class="mt-1 truncate text-xs/5 text-gray-500">@ {{ account.profile.uusername }}</p>
-                                {% else %}
-                                    <p class="mt-1 truncate text-xs/5 text-gray-500">{{ account.email }}</p>
-                                {% endif %}
-                            </div>
-                        </div>
-                        <div class="hidden shrink-0 sm:flex sm:flex-col sm:items-end">
-                            <p class="text-sm/6 text-gray-900">{{ account.profile.followers_count }} підписників</p>
-                            <p class="text-sm/6 text-gray-900">{{ account.profile.following_count }} підписок</p>
-                        </div>
-                    </li>
-                </a>
-            {% endfor %}
-        </ul>
-          
+<div class="container mx-auto px-4 py-6 max-w-xl">
+    <div class="relative">
+        <input type="text" id="search-input" name="q" placeholder="🔍 Пошук за username" autocomplete="off"
+               class="search w-full px-4 py-3 border border-gray-300 rounded-2xl shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-400 focus:border-transparent text-gray-800 placeholder-gray-400 transition" />
     </div>
 
-    <script>
-        document.addEventListener('DOMContentLoaded', function () {
-            const input = document.getElementById('search-input');
-            const resultsContainer = document.getElementById('search-results');
-        
-            input.addEventListener('input', function () {
-                const query = input.value;
-        
-                fetch(`/search/?q=${encodeURIComponent(query)}`, {
-                    headers: {
-                        'X-Requested-With': 'XMLHttpRequest'
-                    }
-                })
-                .then(response => response.text())
-                .then(data => {
-                    const parser = new DOMParser();
-                    const htmlDoc = parser.parseFromString(data, 'text/html');
-                    const newResults = htmlDoc.querySelector('#search-results');
-                    if (newResults) {
-                        resultsContainer.innerHTML = newResults.innerHTML;
-                    }
-                });
+    <ul role="list" id="search-results" class="mt-6 divide-y divide-gray-100">
+        {% for account in accounts_list %}
+            {% if account.username == user.username %}
+                <a href="{% url 'account' %}" class="block group">
+            {% else %}
+                <a href="{% url 'profile' account.username %}" class="block group">
+            {% endif %}
+                <li class="flex items-center gap-x-4 py-3 px-3 rounded-xl complain-card shadow-lg hover:shadow-md hover:bg-black-50 transition transform hover:-translate-y-1">
+                    <img src="{{ account.profile.get_avatar_url }}" alt="Аватар" class="size-12 rounded-full bg-gray-100 border border-gray-200">
+                    <div class="flex-1 min-w-0">
+                        <p class="font-medium text-gray-900 group-hover:text-gray-500">{{ account.username }}</p>
+                        {% if account.profile.uusername %}
+                            <p class="text-sm text-gray-500">@{{ account.profile.uusername }}</p>
+                        {% else %}
+                            <p class="text-sm text-gray-500">{{ account.email }}</p>
+                        {% endif %}
+                    </div>
+                    <div class="hidden sm:flex flex-col text-right text-sm text-gray-600">
+                        <span>{{ account.profile.followers_count }} підписників</span>
+                        <span>{{ account.profile.following_count }} підписок</span>
+                    </div>
+                </li>
+            </a>
+        {% endfor %}
+    </ul>
+</div>
+
+<script>
+    document.addEventListener('DOMContentLoaded', function () {
+        const input = document.getElementById('search-input');
+        const resultsContainer = document.getElementById('search-results');
+
+        input.addEventListener('input', function () {
+            const query = input.value;
+
+            fetch(`/search/?q=${encodeURIComponent(query)}`, {
+                headers: { 'X-Requested-With': 'XMLHttpRequest' }
+            })
+            .then(response => response.text())
+            .then(data => {
+                const parser = new DOMParser();
+                const htmlDoc = parser.parseFromString(data, 'text/html');
+                const newResults = htmlDoc.querySelector('#search-results');
+                if (newResults) {
+                    resultsContainer.innerHTML = newResults.innerHTML;
+
+                    // Добавим плавное появление результатов
+                    newResults.querySelectorAll('li').forEach((el, i) => {
+                        el.style.opacity = 0;
+                        el.style.transform = 'translateY(10px)';
+                        setTimeout(() => {
+                            el.style.transition = 'opacity 0.3s ease, transform 0.3s ease';
+                            el.style.opacity = 1;
+                            el.style.transform = 'translateY(0)';
+                        }, i * 50);
+                    });
+                }
             });
         });
-    </script>
+    });
+</script>
 {% endblock content %}

@@ -16,9 +16,9 @@
                 <span class="text-yellow-500 text-xl">⭐</span>
                 <span class="font-semibold">Вибране</span>
             </a>
-    
+
             <h2 class="text-xl font-bold mb-4 text-gray-800">📩 Запрошення до груп</h2>
-    
+
             {% if invites %}
                 <ul class="space-y-6">
                     {% for invite in invites %}
@@ -54,7 +54,7 @@
             {% endif %}
         </div>
     </div>
-    
+
 
     <div class="w-full xl:w-3/5 max-w-full mx-auto px-2 sm:px-4 profile-container profile-acc">
         {% if home %}
@@ -72,12 +72,12 @@
                                     <form method="post" action="{% url 'add_complaint' publication.id %}">
                                         {% csrf_token %}
                                         <input type="hidden" name="publication_id" value="{{ publication.id }}">
-                                        
+
                                         <div class="mb-3">
                                             <label for="id_reason" class="form-label">Причина</label>
                                             {{ complaint.reason }}
                                         </div>
-                                        
+
                                         <div class="mb-3">
                                             <label for="id_text" class="form-label">Деталі</label>
                                             {{ complaint.text }}
@@ -90,8 +90,28 @@
                         </div>
                     </div>
 
-                    <div class="post-page-container shadow-xl home-card" data-publication-id="{{ publication.id }}">
-                        <div class="post-media">
+                    <div class="post-page-container shadow-xl home-card flex flex-col md:flex-col
+                    space-y-4 md:space-y-0" data-publication-id="{{ publication.id }}">
+
+                        <!-- 🔹 Верх: Хедер (аватар, имя, скарга) -->
+                        <div class="flex justify-between items-center mt-3 px-4 md:flex-row md:items-start md:space-x-4">
+                            <div class="flex items-center space-x-3">
+                                <img src="{{ publication.profile.get_avatar_url }}" alt="Аватар" class="w-10 h-10 rounded-full object-cover">
+                                <div>
+                                    <strong>
+                                        {% if publication.profile.user.username == user.username %}
+                                            <a href="{% url 'account' %}">{{ publication.profile.user.username }}</a>
+                                        {% else %}
+                                            <a href="{% url 'profile' publication.profile.user.username %}">{{ publication.profile.user.username }}</a>
+                                        {% endif %}
+                                    </strong>
+                                </div>
+                            </div>
+                            <button onclick="toggleCard('complainCard-{{ publication.id }}')" class="text-sm text-red-500">Скарга</button>
+                        </div>
+
+                        <!-- 🔹 Медіа -->
+                        <div class="post-media w-full">
                             <div class="media_container mx-auto max-w-[300px] w-full px-4">
                                 {% if publication.media_items.all %}
                                     <div class="swiper swiper-{{ publication.id }} w-full">
@@ -111,78 +131,71 @@
                                         <div class="swiper-pagination"></div>
                                     </div>
                                 {% else %}
-                                    <div style="color: #fff; text-align: center;">Без медіа</div>
+                                    <div class="text-center text-white">Без медіа</div>
                                 {% endif %}
                             </div>
-                        </div>                    
-                        <div class="post-details home-card">
-                            <div class="post-header">
-                                <div class="post-header-text flex flex-row justify-between items-start">
-                                    <div class="post-header-text">
-                                        <div>
-                                            <img src="{{ publication.profile.get_avatar_url }}" alt="Аватар" class="w-10 h-10 rounded-full object-cover">
-                                        </div>
-                                        <div>
-                                            {% if publication.profile.user.username == user.username %}
-                                                <strong><a href="{% url 'account' %}" style="display: block;">{{ publication.profile.user.username }}</a></strong>
-                                            {% else %}
-                                                <strong><a href="{% url 'profile' publication.profile.user.username %}" style="display: block;">{{ publication.profile.user.username }}</a></strong>
-                                            {% endif %}
-                                            <small style="color: #4a4a4a; display: block; margin-top: -4px;">@ {{ publication.profile.uusername }}</small>
-                                            <small style="color: #4a4a4a;">{{ publication.timestamp|date:"d.m.Y H:i" }}</small>
-                                        </div>
-                                    </div>
-                                    <div class="items-end">
-                                        <button type="button" onclick="toggleCard('complainCard-{{ publication.id }}')">
-                                            Скарга
-                                        </button>
-                                    </div>
-                                </div>
-                            </div>
+                        </div>
 
-                            <div class="post-comments comment-block" data-publication-id="{{ publication.id }}" style="max-height: 250px; overflow-y: auto; padding-right: 10px;">
-                                {% for comment in publication.comments.all %}
-                                    <div style="margin-bottom: 15px;">
-                                        <strong>{{ comment.user.user.username }}</strong>: {{ comment.text_com }}
-                                        <small style="color: #4a4a4a; display: block;">{{ comment.created_at|date:"d.m.Y H:i" }}</small>
-                                    </div>
-                                {% empty %}
-                                    <p style="color: #4a4a4a;">Коментарів нема</p>
-                                {% endfor %}
-                            </div>
-
-                            <div class="post-actions">
-                                <div style="margin-bottom: 10px;">
-                                    <!-- Форма лайка -->
-                                    <form method="post" action="{% url 'like_publ' publication.id %}" data-publication-id="{{ publication.id }}" class="like-form" style="display: inline;">
-                                        {% csrf_token %}
-                                        <div class="flex flex-row">
-                                            <button type="submit" class="btn p-0 like">
-                                                {% if publication.liked_by_user %}
-                                                    <ion-icon name="paw" style="font-size: 24px; color: rgb(154, 0, 0);"></ion-icon>
-                                                {% else %}
-                                                    <ion-icon name="paw-outline" style="font-size: 24px;"></ion-icon>
-                                                {% endif %}
-                                            </button>
-                                            <p class="like-count ml-2" style="color: #4a4a4a;">{{ publication.likes_count }}</p>
-                                        </div>
-                                    </form>
-                                    <hr>
+                        <div class="post-text px-4">
+                            <p class="text-gray-700 text-base">{{ publication.text }}</p>
+                            <small class="text-gray-500">{{ publication.timestamp|date:"d.m.Y H:i" }}</small>
+                        </div>
+                        <!-- 🔹 Комментарии -->
+                        <div class="post-comments comment-block px-4" data-publication-id="{{ publication.id }}" style="max-height: 250px; overflow-y: auto; padding-right: 10px;">
+                            {% for comment in publication.comments.all %}
+                                <div class="mb-4">
+                                    <strong>{{ comment.user.user.username }}</strong>: {{ comment.text_com }}
+                                    <small class="block text-gray-500">{{ comment.created_at|date:"d.m.Y H:i" }}</small>
                                 </div>
-                                <!-- Форма комментария -->
-                                <form method="post" action="{% url 'create_comment' %}" class="comment-form" style="display: flex; justify-content: space-between; align-items: center; flex-direction: column; color: #4a4a4a;">
+                            {% empty %}
+                                <p class="text-gray-500">Коментарів нема</p>
+                            {% endfor %}
+                        </div>
+
+                        <!-- 🔹 Лайки и поделиться -->
+                        <div class="post-actions px-4">
+                            <div class="flex items-center space-x-4 mb-2">
+                                <form method="post" action="{% url 'like_publ' publication.id %}" data-publication-id="{{ publication.id }}" class="like-form">
                                     {% csrf_token %}
-                                    <div class="relative w-full" style="perspective: 500px; color: #4a4a4a;">
-                                        <input type="hidden" name="publication_id" value="{{ publication.id }}">
-                                        {{ form.text_com }}
-                                        <button type="submit" class="ml-2 absolute bottom-1.5 right-2">
-                                            <ion-icon name="paper-plane" class="h-5 w-5 mr-1 " style="transform: rotateX(25deg); transform-style: flat;"></ion-icon>
-                                        </button>
-                                    </div>
+                                    <button type="submit" class="btn p-0 like">
+                                        {% if publication.liked_by_user %}
+                                            <ion-icon name="paw" class="text-red-600 text-2xl"></ion-icon>
+                                        {% else %}
+                                            <ion-icon name="paw-outline" class="text-2xl"></ion-icon>
+                                        {% endif %}
+                                    </button>
+                                    <span class="like-count ml-2 text-gray-700">{{ publication.likes_count }}</span>
                                 </form>
+                                <button type="button" onclick="copyPublicationLink('{{ publication.id }}')">
+                                    <ion-icon name="arrow-redo" class="w-6 h-6"></ion-icon>
+                                </button>
+                                <div class="!ml-auto">
+                                    <button class="save-btn" data-id="{{ publication.id }}">
+                                        {% if publication.saved_by_user %}
+                                            <i class="fa-solid fa-bookmark text-black-500"></i>  {# сохранено #}
+                                        {% else %}
+                                            <i class="fa-regular fa-bookmark"></i>  {# не сохранено #}
+                                        {% endif %}
+                                    </button>
+                                </div>
                             </div>
                         </div>
+
+                        <!-- 🔹 Поле ввода коментария -->
+                        <div class="px-4 mb-3">
+                            <form method="post" action="{% url 'create_comment' %}" class="comment-form flex flex-col space-y-2">
+                                {% csrf_token %}
+                                <input type="hidden" name="publication_id" value="{{ publication.id }}">
+                                <div class="relative w-full">
+                                    {{ form.text_com }}
+                                    <button type="submit" class="absolute bottom-1.5 right-2">
+                                        <ion-icon name="paper-plane" class="h-5 w-5 text-gray-700"></ion-icon>
+                                    </button>
+                                </div>
+                            </form>
+                        </div>
                     </div>
+
                     <hr>
                 {% endfor %}
             </div>
@@ -207,7 +220,7 @@
             <a href="{% url 'account' %}">Перейти в профіль</a>
         </small>
         <hr class="mt-4 mb-4 mr-3 bg-gray-300">
-    
+
         <!-- Info Section -->
         <p class="text-center mb-4 font-semibold text-lg text-gray-800">-- Інфо --</p>
         <div class="flex flex-row mb-4">
@@ -215,7 +228,7 @@
             <button type="button" class="gol-s ml-auto mr-3 text-black py-2 px-3 rounded-lg" onclick="toggleCard('followingCard')">{{ user.profile.following_count }} підписок</button>
         </div>
         <hr class="mt-4 mb-4 mr-3 bg-gray-300">
-    
+
         <!-- Recommendations Section -->
         <p class="text-center mb-4 font-semibold text-lg text-gray-800">-- Рекомендації --</p>
         {% for rec in recomended %}
@@ -225,7 +238,7 @@
                     <strong class="text-lg">{{ rec.username }}</strong>
                     <small class="text-gray-600">Ви знайомі?</small>
                 </div>
-                <small class="text-right ml-auto mr-3 text-sm" style="color: #ede6dbf1;">
+                <small class="text-right ml-auto mr-3 text-sm" style="color: rgb(103, 103, 85);">
                     <a href="{% url 'profile' rec.username %}" target="_blank">Переглянути</a>
                 </small>
             </div>
@@ -248,7 +261,7 @@
                     </div>
                 </div>
             {% empty %}
-                <p>Немає підписників</p>   
+                <p>Немає підписників</p>
             {% endfor %}
         </div>
     </div>
@@ -296,10 +309,9 @@
 
         document.querySelectorAll('.swiper').forEach(el => {
             const swiperInstance = new Swiper(el, {
-                loop: true,
+                loop: false,
                 centeredSlides: true,
                 slidesPerView: 1,
-                autoHeight: true,
                 pagination: {
                     el: el.querySelector('.swiper-pagination'),
                     clickable: true,
@@ -310,7 +322,7 @@
                 },
                 observer: true,
                 observeParents: true,
-            });
+                });
 
             el.querySelectorAll('img, video').forEach(media => {
                 media.addEventListener('load', () => swiperInstance.update());
@@ -456,4 +468,42 @@
     });
 </script>
 
+<script>
+    function copyPublicationLink(publicationId) {
+        const url = `${window.location.origin}/publication/${publicationId}/`;
+        navigator.clipboard.writeText(url)
+            .then(() => alert("Посилання скопійовано!"))
+            .catch(() => alert("Не вдалося скопіювати посилання"));
+    }
+</script>
+<script>
+    document.querySelectorAll('.save-btn').forEach(button => {
+    button.addEventListener('click', function () {
+        const publicationId = this.dataset.id;
+
+        fetch('{% url "get_save_publication" %}', {
+        method: 'POST',
+        headers: {
+            'Content-Type': 'application/x-www-form-urlencoded',
+            'X-CSRFToken': document.querySelector('[name=csrfmiddlewaretoken]').value,
+            'X-Requested-With': 'XMLHttpRequest'
+        },
+        body: new URLSearchParams({ publication_id: publicationId })
+        })
+        .then(response => response.json())
+        .then(data => {
+        const icon = this.querySelector('i');
+        if (data.saved) {
+            icon.classList.remove('fa-regular');
+            icon.classList.add('fa-solid', 'text-black-500');
+        } else {
+            icon.classList.remove('fa-solid', 'text-black-500');
+            icon.classList.add('fa-regular');
+        }
+        })
+        .catch(error => console.error('Помилка збереження:', error));
+    });
+    });
+
+</script>
 {% endblock content %}

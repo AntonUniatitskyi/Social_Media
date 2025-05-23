@@ -62,7 +62,7 @@ def chat_view(request, chatroom_name='public-chat'):
 def get_or_create_chatroom(request, username):
     if request.user.username == username:
         return redirect('chat_home')
-    
+
     other_user = User.objects.get(username=username)
     my_chatrooms = request.user.chat_groups.filter(is_private=True)
 
@@ -124,7 +124,7 @@ def chatroom_edit_view(request, chatroom_name):
                 return redirect('chatroom', chatroom_name)
 
         elif 'invite_user' in request.POST:
-            invite_form = InviteUserForm(request.POST)
+            invite_form = InviteUserForm(request.POST, chat_group=chat_group)
             if invite_form.is_valid():
                 to_user = invite_form.cleaned_data['user']
                 if to_user not in chat_group.members.all():
@@ -150,7 +150,7 @@ def chatroom_delete_view(request, chatroom_name):
     chat_group = get_object_or_404(ChatGroup, group_name=chatroom_name)
     if request.user != chat_group.admin:
         raise Http404()
-    
+
     if request.method == 'POST':
         chat_group.delete()
         messages.success(request, 'Чат видалено!')
@@ -163,12 +163,12 @@ def chatroom_leave_view(request, chatroom_name):
     chat_group = get_object_or_404(ChatGroup, group_name=chatroom_name)
     if request.user not in chat_group.members.all():
         raise Http404()
-    
+
     if request.method == 'POST':
         chat_group.members.remove(request.user)
         messages.success(request, "Ти покинув чат")
         return redirect('chat_list')
-    
+
 
 @login_required
 def favorites_chat_view(request):
@@ -184,7 +184,7 @@ def favorites_chat_view(request):
 
     if created:
         chat_group.members.add(request.user)
-    
+
     return redirect('chatroom', chat_group.group_name)
 
 
@@ -192,13 +192,13 @@ def favorites_chat_view(request):
 def handle_invite_view(request, invite_id, action):
     invite = get_object_or_404(ChatInvitation, id=invite_id, to_user=request.user, accepted__isnull=True)
     referer = request.META.get('HTTP_REFERER', '/')
-    
+
     if action == 'accept':
         invite.accepted = True
         invite.chat_group.members.add(request.user)
     elif action == 'decline':
         invite.accepted = False
-    
+
     invite.save()
     invite.delete()
 

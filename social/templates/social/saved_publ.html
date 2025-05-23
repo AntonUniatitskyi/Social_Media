@@ -1,0 +1,170 @@
+{% extends 'social/base.html' %}
+
+{% block content %}
+<div class="max-w-5xl mx-auto px-4 py-8">
+    <h1 class="text-3xl font-bold mb-6 text-center">Збережені публікації</h1>
+
+    {% if publications %}
+        <div class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-6">
+            {% for publication in publications %}
+                <div class="home-card post-page-container rounded-2xl shadow-md overflow-hidden flex flex-col transition hover:shadow-xl">
+
+                    <div class="flex items-center gap-3 px-4 pt-4">
+                        <img src="{{ publication.profile.get_avatar_url }}" alt="Аватар" class="w-10 h-10 rounded-full object-cover">
+                        <div>
+                            <div class="text-sm font-semibold text-gray-800">
+                                <a href="{% url 'profile' publication.profile.user.username %}">{{ publication.profile.user.username }}</a></div>
+                            <div class="text-xs text-gray-500">@{{ publication.profile.uusername }}</div>
+                        </div>
+                    </div>
+
+
+                    <div class="post-media w-full">
+                        <div class="media_container mx-auto max-w-[300px] w-full px-4 py-2">
+                            {% if publication.media_items.all %}
+                                <div class="swiper swiper-{{ publication.id }} w-full">
+                                    <div class="swiper-wrapper">
+                                        {% for media in publication.media_items.all %}
+                                            <div class="swiper-slide">
+                                                {% if media.is_image %}
+                                                    <img src="{{ media.file.url }}" class="w-full max-h-[80vh] object-contain rounded-[10px]" alt="Публікація">
+                                                {% elif media.is_video %}
+                                                    <video src="{{ media.file.url }}" controls class="w-full max-h-[80vh] object-contain rounded-[10px]"></video>
+                                                {% endif %}
+                                            </div>
+                                        {% endfor %}
+                                    </div>
+                                    <div class="swiper-button-next"></div>
+                                    <div class="swiper-button-prev"></div>
+                                    <div class="swiper-pagination"></div>
+                                </div>
+                            {% else %}
+                                <div class="flex items-center justify-center h-[300px] text-gray-500 bg-gray-100 rounded-[10px]">Без медіа</div>
+                            {% endif %}
+                        </div>
+                    </div>
+                    <div class="post-actions">
+
+                        <div class="p-4 flex-1 flex flex-col justify-between">
+                            <p class="text-gray-800 text-sm mb-3">{{ publication.text|truncatechars:100 }}</p>
+
+                            <div class="flex items-center justify-between mt-auto">
+                                <div class="flex items-center space-x-4">
+                                    <form method="post" action="{% url 'like_publ' publication.id %}" class="like-form" data-publication-id="{{ publication.id }}">
+                                        {% csrf_token %}
+                                        <button type="submit">
+                                            {% if publication.is_liked_by_user %}
+                                                <ion-icon name="paw" class="text-red-600 text-xl"></ion-icon>
+                                            {% else %}
+                                                <ion-icon name="paw-outline" class="text-xl"></ion-icon>
+                                            {% endif %}
+                                        </button>
+                                        <span class="like-count text-sm text-gray-600">{{ publication.likes_count }}</span>
+                                    </form>
+
+                                    <button type="button" onclick="copyPublicationLink('{{ publication.id }}')" title="Скопіювати посилання">
+                                        <ion-icon name="arrow-redo" class="text-xl text-gray-700"></ion-icon>
+                                    </button>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            {% endfor %}
+        </div>
+    {% else %}
+        <p class="text-center text-gray-500">У вас ще немає збережених публікацій.</p>
+    {% endif %}
+</div>
+
+
+<script>
+document.addEventListener('DOMContentLoaded', function () {
+    document.querySelectorAll('.swiper').forEach((swiperEl) => {
+        new Swiper(swiperEl, {
+            loop: true,
+            navigation: {
+                nextEl: swiperEl.querySelector('.swiper-button-next'),
+                prevEl: swiperEl.querySelector('.swiper-button-prev'),
+            },
+            pagination: {
+                el: swiperEl.querySelector('.swiper-pagination'),
+                clickable: true,
+            },
+        });
+    });
+});
+</script>
+<script>
+    function copyPublicationLink(publicationId) {
+    const url = `${window.location.origin}/publication/${publicationId}/`;
+    navigator.clipboard.writeText(url).then(() => {
+        alert('Посилання скопійовано!');
+    }).catch(() => {
+        alert('Не вдалося скопіювати посилання');
+    });
+}
+</script>
+
+<script>
+    document.querySelectorAll('.like-form').forEach(form => {
+      form.addEventListener('submit', function (e) {
+        e.preventDefault();
+
+        const publicationId = this.dataset.publicationId;
+        const csrfToken = this.querySelector('[name=csrfmiddlewaretoken]').value;
+
+        fetch(`/like/${publicationId}/`, {
+          method: 'POST',
+          headers: {
+            'X-CSRFToken': csrfToken,
+            'X-Requested-With': 'XMLHttpRequest',
+          },
+        })
+        .then(response => response.json())
+        .then(data => {
+          if (data.success) {
+            const icon = this.querySelector('ion-icon');
+            icon.name = data.liked ? 'paw' : 'paw-outline';
+            icon.style.color = data.liked ? 'red' : '';
+            this.querySelector('.like-count').textContent = `${data.likes_count}`;
+          }
+        });
+      });
+    });
+    document.querySelectorAll('.swiper-slide img').forEach(img => {
+        let lastTap = 0;
+        const heart = document.createElement('ion-icon');
+        heart.name = 'paw';
+        heart.classList.add('heart-animation');
+        img.style.position = 'relative';
+        img.parentElement.style.position = 'relative';
+        img.parentElement.appendChild(heart);
+
+        function triggerLike(imgElement) {
+            const container = imgElement.closest('.post-page-container');
+            const publicationId = container?.dataset.publicationId;
+            const form = container.querySelector('.like-form');
+
+            if (form) {
+                form.querySelector('button[type="submit"]').click();
+            }
+            heart.classList.add('show');
+            setTimeout(() => heart.classList.remove('show'), 600);
+        }
+
+        img.addEventListener('touchend', function () {
+            const currentTime = new Date().getTime();
+            const tapLength = currentTime - lastTap;
+            if (tapLength < 300 && tapLength > 0) {
+                triggerLike(this);
+            }
+            lastTap = currentTime;
+        });
+
+        img.addEventListener('dblclick', function () {
+            triggerLike(this);
+        });
+    });
+</script>
+{% endblock %}
