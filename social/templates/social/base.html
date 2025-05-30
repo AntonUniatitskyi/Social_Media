@@ -39,25 +39,31 @@
 
 <body class="d-flex flex-column min-vh-100 {% if request.path == '/login/' or request.path == '/register/' %}page-register{% endif %}">
     {% if messages %}
-        <div class="fixed top-4 left-1/2 transform -translate-x-1/2 z-50 space-y-2 w-full max-w-md px-4">
+        <div class="fixed top-6 left-1/2 transform -translate-x-1/2 z-50 w-full max-w-md px-4 space-y-4">
             {% for message in messages %}
+            <div class="flex items-start gap-4 p-4 rounded-xl shadow-xl transition-all duration-300 bg-white border-l-4
+                {% if message.tags == 'success' %} border-green-500
+                {% elif message.tags == 'error' %} border-red-500
+                {% elif message.tags == 'warning' %} border-yellow-400
+                {% elif message.tags == 'info' %} border-blue-500
+                {% else %} border-gray-400
+                {% endif %}">
 
-                <div class="notification-animate px-6 py-4 rounded-xl shadow-lg text-lg font-semibold text-center
-                transition-all duration-300">
-                    <div class="nheader">
-                        <span class="title">Нове сповіщення</span>
-                    </div>
-                    <div class="detail">
-                        <i class="bi bi-cart notif-i
-                        {% if message.tags == 'success' %} bg-green-400 text-white
-                        {% elif message.tags == 'error' %} bg-red-500 text-white
-                        {% elif message.tags == 'warning' %} bg-yellow-400 text-black
-                        {% elif message.tags == 'info' %} bg-blue-500 text-white
-                        {% else %} bg-gray-500 text-white
-                        {% endif %}"></i>
-                        <span class="ntext">{{ message }}</span>
-                    </div>
+                <div class="flex-shrink-0 mt-1">
+                    <i class="bi
+                        {% if message.tags == 'success' %} bi-check-circle-fill text-green-500
+                        {% elif message.tags == 'error' %} bi-x-circle-fill text-red-500
+                        {% elif message.tags == 'warning' %} bi-exclamation-triangle-fill text-yellow-400
+                        {% elif message.tags == 'info' %} bi-info-circle-fill text-blue-500
+                        {% else %} bi-bell-fill text-gray-500
+                        {% endif %} text-2xl"></i>
                 </div>
+
+                <div class="flex-1">
+                    <div class="text-sm font-semibold text-gray-800">Нове сповіщення</div>
+                    <div class="text-gray-600 text-base">{{ message }}</div>
+                </div>
+            </div>
             {% endfor %}
         </div>
 
@@ -69,14 +75,16 @@
                 });
             }, 4000);
         </script>
-    {% endif %}
+        {% endif %}
+
     {% if not hide_header %}
         <div class="container mx-auto my-4 px-2 sm:px-4">
             <header x-data="{ open: false, lastScroll: 0, showHeader: true }"
                     x-init="lastScroll = window.scrollY"
                     @scroll.window="let currentScroll = window.scrollY; showHeader = currentScroll < lastScroll || currentScroll < 10; lastScroll = currentScroll;"
                     x-bind:class="showHeader ? 'translate-y-0' : '-translate-y-full'"
-                    class="shadow-lg w-full max-w-3xl mx-auto py-3 px-4 sm:px-6 md:px-8 flex items-center justify-between flex-wrap gap-3 rounded-2xl backdrop-blur-sm bg-white/20 border border-gray-200/50 transition-transform duration-300 fixed top-3 left-0 right-0 z-50">
+                    class="shadow-lg w-full max-w-3xl mx-auto py-3 px-4 sm:px-6 md:px-8 flex items-center justify-between flex-wrap gap-3
+                    rounded-2xl backdrop-blur-sm bg-[#fdf6ef]/90 border border-[#e6d8c3] transition-transform duration-300 fixed top-3 left-0 right-0 z-50">
 
                 <!-- Лого -->
                 <div class="flex items-center gap-2 flex-shrink-0">
@@ -147,20 +155,49 @@
                 </div>
 
                 <!-- Выпадающее меню (мобильное) -->
-                <div x-show="open" class="w-full flex flex-col gap-4 mt-4 sm:hidden text-lg text-gray-700">
-                    <a href="{% url 'home' %}">Головна</a>
-                    <a href="{% url 'publ_add' %}">Додати</a>
-                    <a href="{% url 'chat_list' %}">Чати</a>
-                    <a href="{% url 'search' %}">Пошук</a>
-                    <a href="{% url 'notification' %}">Сповіщення
-                        {% if unread_notifications > 0 %}
-                            <span class="ml-1 bg-red-500 text-white text-xs rounded-full px-1">{{ unread_notifications }}</span>
-                        {% endif %}
-                    </a>
+                <div x-show="open"
+                x-transition:enter="transition ease-out duration-300"
+                x-transition:enter-start="opacity-0 -translate-y-2"
+                x-transition:enter-end="opacity-100 translate-y-0"
+                x-transition:leave="transition ease-in duration-200"
+                x-transition:leave-start="opacity-100 translate-y-0"
+                x-transition:leave-end="opacity-0 -translate-y-2"
+                class="absolute top-20 left-1/2 transform -translate-x-1/2 w-11/12 max-w-sm bg-[#fdf6ef] border border-[#e6d8c3] rounded-xl shadow-lg p-4 flex flex-col gap-4 sm:hidden text-lg text-gray-700 z-40">
+                    <div class="flex flex-row items-center gap-2">
+                        <ion-icon name="home" class="text-2xl"></ion-icon>
+                        <a href="{% url 'home' %}">Головна</a>
+                    </div>
+                    <div class="flex flex-row items-center gap-2">
+                        <ion-icon name="add-circle" class="text-2xl"></ion-icon>
+                        <a href="{% url 'publ_add' %}">Додати</a>
+                    </div>
+                    <div class="flex flex-row items-center gap-2">
+                        <ion-icon name="chatbubbles" class="text-2xl"></ion-icon>
+                        <a href="{% url 'chat_list' %}">Чати</a>
+                    </div>
+                    <div class="flex flex-row items-center gap-2">
+                        <ion-icon name="search" class="text-2xl"></ion-icon>
+                        <a href="{% url 'search' %}">Пошук</a>
+                    </div>
+                    <div class="flex flex-row items-center gap-2">
+                        <ion-icon name="chatbox" class="text-2xl"></ion-icon>
+                        <a href="{% url 'notification' %}">Сповіщення
+                            {% if unread_notifications > 0 %}
+                                <span class="ml-1 bg-red-500 text-white text-xs rounded-full px-1">{{ unread_notifications }}</span>
+                            {% endif %}
+                        </a>
+                    </div>
                     {% if user.is_authenticated %}
-                        <a href="{% url 'account' %}">Профіль</a>
+                        <div class="flex flex-row items-center gap-2 ml-3">
+                            <img src="{{ user.profile.get_avatar_url }}" class="h-9 w-9 rounded-full object-cover" alt="Avatar">
+                            <a href="{% url 'account' %}">
+                                Профіль
+                            </a>
+                        </div>
                     {% else %}
-                        <a href="{% url 'login' %}">Увійти</a>
+                        <a href="{% url 'login' %}" class="px-3 py-1 border border-gray-400 rounded-lg text-sm text-gray-700 hover:bg-gray-100">
+                            Увійти
+                        </a>
                     {% endif %}
                 </div>
             </header>
