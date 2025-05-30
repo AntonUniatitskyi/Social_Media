@@ -27,6 +27,7 @@ SECRET_KEY = 'django-insecure-1u@&=zou2q4g(uk(&@^1rso=vhc_!u=#+-v3hspwxeg@7xbd1k
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = True
 ALLOWED_HOSTS = ['*']
+CSRF_TRUSTED_ORIGINS = ['https://0894-95-158-48-194.ngrok-free.app']
 
 # Application definition
 
@@ -40,8 +41,10 @@ INSTALLED_APPS = [
     'django.contrib.humanize',
     'django.contrib.staticfiles',
     'django_htmx',
+    'rest_framework',
     'social',
     'chat',
+    'widget_tweaks'
 ]
 
 MIDDLEWARE = [
@@ -78,7 +81,7 @@ ROOT_URLCONF = 'core.urls'
 TEMPLATES = [
     {
         'BACKEND': 'django.template.backends.django.DjangoTemplates',
-        'DIRS': [],
+        'DIRS': [BASE_DIR / 'templates'],
         'APP_DIRS': True,
         'OPTIONS': {
             'context_processors': [
@@ -166,3 +169,10 @@ LOGOUT_REDIRECT_URL = '/'
 ADMIN_EMAIL = config('ADMIN_EMAILS')
 
 CSRF_COOKIE_SECURE = True
+
+# settings.py
+REST_FRAMEWORK = {
+    'DEFAULT_AUTHENTICATION_CLASSES': (
+        'rest_framework_simplejwt.authentication.JWTAuthentication',
+    )
+}

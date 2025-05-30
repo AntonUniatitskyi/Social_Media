@@ -17,7 +17,8 @@
     <div id="online-icon" class="rounded-full bg-red-500 p-1.5 mt-1"></div>
 {% endif %}
 
-<ul id="groupchat-members" class="flex gap-4">
+<ul id="groupchat-members" class="ml-10 flex gap-2 flex-wrap flex-nowrap
+                    overflow-x-auto max-w-[calc(100%-2rem)] whitespace-nowrap relative">
     {% for member in chat_group.members.all %}
         <li>
             {% if member.username == user.username %}

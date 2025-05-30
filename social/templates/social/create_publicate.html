@@ -1,11 +1,12 @@
 {% extends 'social/base.html' %}
+{% load widget_tweaks %}
 
 {% block title %}
     Створити
 {% endblock title %}
 
 {% block content %}
-<div class="create-post-container">
+<div class="create-post-container shadow-xl">
   <form method="post" action="" enctype="multipart/form-data" class="create-post-form">
         {% csrf_token %}
         {% if form.non_field_errors %}
@@ -17,7 +18,7 @@
         {% endif %}
       <div class="inputbox-reg">
           <label for="id_text">Підпис</label>
-          {{ form.text }}
+          {{ form.text|add_class:"w-full px-4 py-3 border border-gray-300 rounded-xl shadow-sm focus:ring-blue-400 focus:border-blue-400" }}
           <ion-icon name="information-outline" class="input-icon"></ion-icon>
       </div>
 
@@ -32,7 +33,7 @@
           <div class="swiper-pagination"></div>
       </div>
 
-      <button type="submit" class="btn submit-btn">Опублікувати</button>
+      <button type="submit" class="gol-s text-black py-2 px-3 rounded-lg">Опублікувати</button>
   </form>
 </div>
 

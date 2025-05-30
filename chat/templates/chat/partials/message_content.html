@@ -1,5 +1,13 @@
+{% load extras %}
 {% if message.body %}
-    <span>{{ message.body }}</span>
+    {% if message.body|is_url %}
+        <a href="{{ message.body }}" target="_blank" rel="noopener noreferrer"
+        class="text-blue-600 hover:underline break-all max-w-full inline-block">
+            {{ message.body }}
+        </a>
+    {% else %}
+        <span class="break-words max-w-full inline-block">{{ message.body }}</span>
+    {% endif %}
 {% elif message.file %}
     {% if message.is_image %}
         <img class="min-w-8 sm:max-w-xs md:max-w-sm rounded-2xl overflow-hidden shadow-md" src="{{ message.file.url }}">

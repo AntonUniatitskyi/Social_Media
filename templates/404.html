@@ -1,0 +1,39 @@
+{% extends "social/base.html" %}
+
+{% block content %}
+<div class="flex flex-col items-center justify-center min-h-screen text-center relative overflow-hidden text-gray-800">
+
+    <div class="bg-white/70 backdrop-blur-md rounded-3xl shadow-xl px-10 py-12 mx-4">
+        <h1 class="text-9xl font-extrabold text-yellow-500 glow-gold">404</h1>
+        <p class="mt-4 text-2xl text-gray-700">Ой, сторінку не знайдено</p>
+        <p class="mt-2 text-lg text-gray-500">Ми не можемо знайти те, що ти шукаєш.</p>
+
+        <a href="{% url 'home' %}" class="mt-8 inline-block px-6 py-3 gold-button">
+            Повернутися на головну
+        </a>
+    </div>
+
+</div>
+
+<style>
+/* Золоте світіння для цифри */
+.glow-gold {
+    text-shadow: 0 0 10px rgba(255, 215, 0, 0.6), 0 0 20px rgba(255, 215, 0, 0.4);
+}
+
+/* Золота кнопка */
+.gold-button {
+    background: linear-gradient(135deg, #FFD700, #FFC300);
+    color: #4a3f1c;
+    font-weight: 600;
+    border-radius: 9999px;
+    box-shadow: 0 0 10px rgba(255, 215, 0, 0.5), 0 4px 10px rgba(0,0,0,0.1);
+    transition: all 0.3s ease-in-out;
+}
+
+.gold-button:hover {
+    box-shadow: 0 0 20px rgba(255, 215, 0, 0.8), 0 6px 14px rgba(0,0,0,0.15);
+    transform: translateY(-2px);
+}
+</style>
+{% endblock %}
