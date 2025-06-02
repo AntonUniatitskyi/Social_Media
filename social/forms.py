@@ -112,7 +112,7 @@ class SetAdminForm(Form):
     user = ModelChoiceField(
         queryset=User.objects.all(),
         label="Оберіть користувача",
-        widget=Select(attrs={'class': 'form-select'})
+        widget=Select(attrs={'class': 'form-select complain-card rounded-2xl shadow-2xl'})
     )
 
 
