@@ -689,7 +689,8 @@ mini-logo {
 .post-page-container {
     display: flex;
     flex-direction: row;
-    max-width: 1500px;
+    max-width: 100%;
+    width: auto;
     margin: 0 auto;
     min-height: 80vh;
     border: 1px solid #ddd;
@@ -755,6 +756,7 @@ mini-logo {
 .swiper {
     width: auto;
     height: auto;
+    aspect-ratio: 4 / 3; /* Задаємо співвідношення сторін */
 }
 
 
@@ -762,18 +764,19 @@ mini-logo {
     display: flex;
     justify-content: center;
     align-items: center;
-    background-color: #fff;
+    background-color: #ffffff00;
     width: auto;
     height: auto;
 }
 
 .swiper-slide img,
 .swiper-slide video {
-    width: auto;
-    height: auto;
+    width: 100%;
+    height: 100%;
     max-width: 100%;
     max-height: 80vh;
     object-fit: contain;
+    aspect-ratio: 4 / 3; /* Задаємо співвідношення сторін для зображень і відео */
 }
 
 .swiper-button-next,
@@ -804,7 +807,7 @@ mini-logo {
       margin: 0 auto;
     }
     .swiper {
-      aspect-ratio: auto;
+      aspect-ratio: 4 / 3;
     }
     .swiper-slide img,
     .swiper-slide video {
@@ -814,7 +817,6 @@ mini-logo {
     }
     .post-media {
         flex-direction: column;
-        padding: 10px;
         justify-content: center;
         align-items: center;
         width: 100%;
@@ -822,6 +824,31 @@ mini-logo {
     .post-page-container {
         padding: 0;
         overflow: hidden;
+    }
+    .media-wrapper-c {
+        /* display: flex;
+        justify-content: center;
+        align-items: center;
+        height: 100%; */
+        position: relative;
+        width: 50%;
+        padding-top: 75%; /* 3 / 4 = 0.75 = 75% */
+        overflow: hidden;
+        border-radius: 12px;
+    }
+
+    .media-wrapper-c img, .media-wrapper-c video {
+        /* max-width: 100%;
+        max-height: 60vh;
+        object-fit: contain; */
+        position: absolute;
+        top: 0;
+        left: 0;
+        width: 500%;
+        height: 50%;
+        object-fit: contain; /* важливо для кропу */
+        border-radius: 12px;
+
     }
 }
 
@@ -895,16 +922,28 @@ mini-logo {
 }
 
 .media-wrapper-c {
-    display: flex;
+    /* display: flex;
     justify-content: center;
     align-items: center;
-    height: 100%;
+    height: 100%; */
+    position: relative;
+    width: 100%;
+    padding-top: 75%; /* 3 / 4 = 0.75 = 75% */
+    overflow: hidden;
+    border-radius: 12px;
 }
 
 .media-wrapper-c img, .media-wrapper-c video {
-    max-width: 100%;
+    /* max-width: 100%;
     max-height: 60vh;
-    object-fit: contain;
+    object-fit: contain; */
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    object-fit: cover; /* важливо для кропу */
+    border-radius: 12px;
 }
 
 .submit-btn {

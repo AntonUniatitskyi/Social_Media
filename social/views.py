@@ -10,6 +10,9 @@ from django.http import JsonResponse
 from django.shortcuts import get_object_or_404, redirect, render, HttpResponseRedirect
 from django.views.decorators.http import require_POST
 from django.views.generic import CreateView, DetailView, ListView, View
+from PIL import Image
+from io import BytesIO
+from django.core.files.base import ContentFile
 import core.settings
 from chat.models import ChatInvitation
 from . import models
@@ -97,6 +100,27 @@ class CommentCreateView(LoginRequiredMixin, CreateView):
     def form_invalid(self, form):
         return JsonResponse({'success': False, 'errors': form.errors}, status=400)
 
+def crop_to_aspect_ratio(image, target_ratio=(4, 3)):
+    if image.mode in ('RGBA', 'LA'):
+        image = image.convert('RGB')
+    img_width, img_height = image.size
+    target_w, target_h = target_ratio
+    target_ratio_float = target_w / target_h
+    current_ratio = img_width / img_height
+
+    if current_ratio > target_ratio_float:
+        # ширина надлишкова — обрізати по ширині
+        new_width = int(img_height * target_ratio_float)
+        offset = (img_width - new_width) // 2
+        box = (offset, 0, offset + new_width, img_height)
+    else:
+        # висота надлишкова — обрізати по висоті
+        new_height = int(img_width / target_ratio_float)
+        offset = (img_height - new_height) // 2
+        box = (0, offset, img_width, offset + new_height)
+
+    return image.crop(box)
+
 class PublicationCreateView(LoginRequiredMixin, CreateView):
     model = models.Publication
     form_class = PublicationForm
@@ -118,7 +142,23 @@ class PublicationCreateView(LoginRequiredMixin, CreateView):
         publication.save()
 
         for file in files[:10]:
-            models.MediaItem.objects.create(publication=publication, file=file)
+            if file.content_type.startswith('image/'):
+                try:
+                    img = Image.open(file)
+                    img = crop_to_aspect_ratio(img)
+                    buffer = BytesIO()
+                    img_format = img.format if img.format else 'JPEG'
+                    img.save(buffer, format=img_format)
+                    buffer.seek(0)
+                except Exception as e:
+                    form.add_error(None, f"Не вдалося обробити файл {file.name}: {e}")
+                    return self.form_invalid(form)
+                finally:
+                    img.close()
+                django_file = ContentFile(buffer.read(), name=file.name)
+                models.MediaItem.objects.create(publication=publication, file=django_file)
+            else:
+                models.MediaItem.objects.create(publication=publication, file=file)
 
         for follower in publication.profile.followers.all():
             models.Notification.objects.create(

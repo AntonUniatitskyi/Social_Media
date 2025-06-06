@@ -91,7 +91,7 @@
                     </div>
 
                     <div class="post-page-container shadow-xl home-card flex flex-col md:flex-col
-                    space-y-4 md:space-y-0" data-publication-id="{{ publication.id }}">
+                    space-y-1 md:space-y-0" data-publication-id="{{ publication.id }}">
 
                         <!-- 🔹 Верх: Хедер (аватар, имя, скарга) -->
                         <div class="flex justify-between items-center mt-3 px-4 md:flex-row md:items-start md:space-x-4">
@@ -111,18 +111,20 @@
                         </div>
 
                         <!-- 🔹 Медіа -->
-                        <div class="post-media w-full">
-                            <div class="media_container mx-auto max-w-[300px] w-full px-4">
+                        <div class="post-media w-full px-3 mt-2">
+                            <div class="media_container mx-auto w-full">
                                 {% if publication.media_items.all %}
-                                    <div class="swiper swiper-{{ publication.id }} w-full">
+                                    <div class="swiper swiper-{{ publication.id }} w-full rounded-xl">
                                         <div class="swiper-wrapper">
                                             {% for media in publication.media_items.all %}
                                                 <div class="swiper-slide">
-                                                    {% if media.is_image %}
-                                                        <img src="{{ media.file.url }}" class="w-full max-h-[80vh] object-contain rounded-[10px]" alt="Публикация">
-                                                    {% elif media.is_video %}
-                                                        <video src="{{ media.file.url }}" controls class="w-full max-h-[80vh] object-contain rounded-[10px]"></video>
-                                                    {% endif %}
+                                                    <div class="aspect-w-4 aspect-h-3 w-full overflow-hidden">
+                                                        {% if media.is_image %}
+                                                            <img src="{{ media.file.url }}" alt="Публикация" class="w-full h-full object-cover">
+                                                        {% elif media.is_video %}
+                                                            <video src="{{ media.file.url }}" controls class="w-full h-full object-cover"></video>
+                                                        {% endif %}
+                                                    </div>
                                                 </div>
                                             {% endfor %}
                                         </div>
@@ -136,7 +138,7 @@
                             </div>
                         </div>
 
-                        <div class="post-text px-4">
+                        <div class="ml-2">
                             <p class="text-gray-700 text-base">{{ publication.text }}</p>
                             <small class="text-gray-500">{{ publication.timestamp|date:"d.m.Y H:i" }}</small>
                         </div>
@@ -291,6 +293,89 @@
     </div>
 </div>
 
+<!-- <script>
+    const input = document.getElementById('mediaInput');
+    const carouselInner = document.getElementById('carouselInner');
+    let swiper;
+
+    input.addEventListener('change', function (event) {
+        const files = event.target.files;
+        carouselInner.innerHTML = '';
+
+        if (files.length > 10) {
+            alert("Максимум 10 файлів!");
+            return;
+        }
+
+        for (let i = 0; i < files.length; i++) {
+            const file = files[i];
+            const fileURL = URL.createObjectURL(file);
+
+            const slide = document.createElement('div');
+            slide.classList.add('swiper-slide');
+
+            const wrapper = document.createElement('div');
+            wrapper.classList.add('media-wrapper-c');
+
+            if (file.type.startsWith('image/')) {
+                const img = document.createElement('img');
+                img.src = fileURL;
+                wrapper.appendChild(img);
+            } else if (file.type.startsWith('video/')) {
+                const video = document.createElement('video');
+                video.src = fileURL;
+                video.controls = true;
+                wrapper.appendChild(video);
+            }
+
+            slide.appendChild(wrapper);
+            carouselInner.appendChild(slide);
+        }
+
+        if (swiper) swiper.destroy(true, true);
+
+        swiper = new Swiper('.create-swiper', {
+            loop: false,
+            slidesPerView: 1,
+            centeredSlides: true,
+            pagination: {
+                el: '.swiper-pagination',
+                clickable: true,
+            },
+            navigation: {
+                nextEl: '.swiper-button-next',
+                prevEl: '.swiper-button-prev',
+            },
+        });
+
+        setTimeout(() => swiper.update(), 100);
+    });
+</script> -->
+
+<script>
+document.addEventListener('DOMContentLoaded', function () {
+    // Знаходимо всі контейнери Swiper
+    const swiperContainers = document.querySelectorAll('.swiper');
+
+    swiperContainers.forEach(container => {
+        // Отримуємо унікальний ID для Swiper
+        const swiperId = container.classList[1]; // Наприклад, swiper-123
+        new Swiper(`.${swiperId}`, {
+            loop: true,
+            slidesPerView: 1,
+            pagination: {
+                el: `.${swiperId} .swiper-pagination`,
+                clickable: true,
+            },
+            navigation: {
+                nextEl: `.${swiperId} .swiper-button-next`,
+                prevEl: `.${swiperId} .swiper-button-prev`,
+            },
+        });
+    });
+});
+</script>
+
 <script>
     function toggleCard(id) {
         const card = document.getElementById(id);
@@ -305,31 +390,6 @@
                     card.style.display = 'none';
                 }
             });
-        });
-
-        document.querySelectorAll('.swiper').forEach(el => {
-            const swiperInstance = new Swiper(el, {
-                loop: false,
-                centeredSlides: true,
-                slidesPerView: 1,
-                pagination: {
-                    el: el.querySelector('.swiper-pagination'),
-                    clickable: true,
-                },
-                navigation: {
-                    nextEl: el.querySelector('.swiper-button-next'),
-                    prevEl: el.querySelector('.swiper-button-prev'),
-                },
-                observer: true,
-                observeParents: true,
-                });
-
-            el.querySelectorAll('img, video').forEach(media => {
-                media.addEventListener('load', () => swiperInstance.update());
-                media.addEventListener('loadeddata', () => swiperInstance.update());
-            });
-
-            window.addEventListener('resize', () => swiperInstance.update());
         });
 
         // AJAX лайки
