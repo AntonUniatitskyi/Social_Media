@@ -95,18 +95,20 @@
                         </div>
                     </div>
 
-                    <div class="post-media w-full">
-                        <div class="media_container mx-auto max-w-[300px] w-full px-4">
+                    <div class="post-media w-full px-3 mt-2">
+                        <div class="media_container mx-auto w-full">
                             {% if publication.media_items.all %}
-                                <div class="swiper swiper-{{ publication.id }} w-full">
+                                <div class="swiper swiper-{{ publication.id }} w-full rounded-xl">
                                     <div class="swiper-wrapper">
                                         {% for media in publication.media_items.all %}
                                             <div class="swiper-slide">
-                                                {% if media.is_image %}
-                                                    <img src="{{ media.file.url }}" class="w-full max-h-[80vh] object-contain rounded-[10px]" alt="Публикация">
-                                                {% elif media.is_video %}
-                                                    <video src="{{ media.file.url }}" controls class="w-full max-h-[80vh] object-contain rounded-[10px]"></video>
-                                                {% endif %}
+                                                <div class="aspect-w-4 aspect-h-3 w-full overflow-hidden">
+                                                    {% if media.is_image %}
+                                                        <img src="{{ media.file.url }}" alt="Публикация" class="w-full h-full object-cover">
+                                                    {% elif media.is_video %}
+                                                        <video src="{{ media.file.url }}" controls class="w-full h-full object-cover"></video>
+                                                    {% endif %}
+                                                </div>
                                             </div>
                                         {% endfor %}
                                     </div>
@@ -243,6 +245,28 @@
 </div>
 
 <script>
+document.addEventListener('DOMContentLoaded', function () {
+    const swiperContainers = document.querySelectorAll('.swiper');
+
+    swiperContainers.forEach(container => {
+        const swiperId = container.classList[1];
+        new Swiper(`.${swiperId}`, {
+            loop: true,
+            slidesPerView: 1,
+            pagination: {
+                el: `.${swiperId} .swiper-pagination`,
+                clickable: true,
+            },
+            navigation: {
+                nextEl: `.${swiperId} .swiper-button-next`,
+                prevEl: `.${swiperId} .swiper-button-prev`,
+            },
+        });
+    });
+});
+</script>
+
+<script>
     function toggleCard(id) {
       const card = document.getElementById(id);
       card.style.display = card.style.display === 'block' ? 'none' : 'block';
@@ -258,33 +282,6 @@
           }
         });
       });
-
-      // Инициализация Swiper
-      document.querySelectorAll('.swiper').forEach(el => {
-        const swiperInstance = new Swiper(el, {
-        loop: false,
-        centeredSlides: true,
-        slidesPerView: 1,
-        pagination: {
-            el: el.querySelector('.swiper-pagination'),
-            clickable: true,
-        },
-        navigation: {
-            nextEl: el.querySelector('.swiper-button-next'),
-            prevEl: el.querySelector('.swiper-button-prev'),
-        },
-        observer: true,
-        observeParents: true,
-        });
-
-        el.querySelectorAll('img, video').forEach(media => {
-          media.addEventListener('load', () => swiperInstance.update());
-          media.addEventListener('loadeddata', () => swiperInstance.update());
-        });
-
-        window.addEventListener('resize', () => swiperInstance.update());
-      });
-
       // AJAX-лайки
       document.querySelectorAll('.like-form').forEach(form => {
         form.addEventListener('submit', function (e) {
