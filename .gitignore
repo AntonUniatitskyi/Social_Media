@@ -16,6 +16,7 @@ __pycache__/
 media/avatars/*
 !media/avatars/default-avatar.png
 !media/avatars/logo.png
+!media/avatars/icon.png
 
 media/publications/*
 !media/publications/roon_s.png
