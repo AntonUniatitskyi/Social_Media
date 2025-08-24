@@ -15,7 +15,9 @@
 git clone https://github.com/AntonUniatitskyi/Social_Media
 cd Social_Media
 pip install -r requirements.txt
+copy .env.example .env
 ```
+###### Заповніть файл .env
 
 #### 🌐 Для запуску сервера виконайте команди:
 
