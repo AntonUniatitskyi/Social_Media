@@ -168,7 +168,7 @@ LOGIN_URL = '/login'
 LOGIN_REDIRECT_URL = '/'
 LOGOUT_REDIRECT_URL = '/'
 
-ADMIN_EMAIL = config('ADMIN_EMAILS')
+ADMIN_EMAIL = config('ADMIN_EMAILS', default="admin@example.com")
 
 CSRF_COOKIE_SECURE = True
 
