@@ -144,19 +144,17 @@ class PublicationCreateView(LoginRequiredMixin, CreateView):
         for file in files[:10]:
             if file.content_type.startswith('image/'):
                 try:
-                    img = Image.open(file)
-                    img = crop_to_aspect_ratio(img)
-                    buffer = BytesIO()
-                    img_format = img.format if img.format else 'JPEG'
-                    img.save(buffer, format=img_format)
-                    buffer.seek(0)
+                    with Image.open(file) as img:
+                        img = crop_to_aspect_ratio(img)
+                        buffer = BytesIO()
+                        img_format = img.format if img.format else 'JPEG'
+                        img.save(buffer, format=img_format)
+                        buffer.seek(0)
+                    django_file = ContentFile(buffer.read(), name=file.name)
+                    models.MediaItem.objects.create(publication=publication, file=django_file)
                 except Exception as e:
                     form.add_error(None, f"Не вдалося обробити файл {file.name}: {e}")
                     return self.form_invalid(form)
-                finally:
-                    img.close()
-                django_file = ContentFile(buffer.read(), name=file.name)
-                models.MediaItem.objects.create(publication=publication, file=django_file)
             else:
                 models.MediaItem.objects.create(publication=publication, file=file)
 
