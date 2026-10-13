@@ -19,10 +19,13 @@ from django.urls import path, include
 from django.conf import settings
 from django.conf.urls.static import static
 
+import social
+
 urlpatterns = [
     path('admin/', admin.site.urls),
     path('', include('social.urls')),
-    path('chat/', include('chat.urls'))
+    path('chat/', include('chat.urls')),
+    path('api/v1/', include('social.api.urls'))
 ]
 
 
