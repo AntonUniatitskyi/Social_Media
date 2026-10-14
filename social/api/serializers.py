@@ -1,6 +1,7 @@
 from rest_framework import serializers
-from social.models import Publication, Comment, Profile, MediaItem
+from social.models import Publication, Comment, Profile, MediaItem, Notification
 
+from social.services import attach_media
 
 class ProfileMiniSerializer(serializers.ModelSerializer):
     class Meta:
@@ -8,7 +9,7 @@ class ProfileMiniSerializer(serializers.ModelSerializer):
         fields = ('id', 'uusername', 'avatar')
 
 
-class ProfileSerializers(serializers.ModelSerializer):
+class ProfileSerializer(serializers.ModelSerializer):
     followers_count = serializers.IntegerField(read_only=True)
     following_count = serializers.IntegerField(read_only=True)
     publications_count = serializers.IntegerField(read_only=True)
@@ -16,7 +17,7 @@ class ProfileSerializers(serializers.ModelSerializer):
     class Meta:
         model = Profile
         fields = (
-            'id', 'username', 'bio', 'avatar',
+            'id', 'uusername', 'bio', 'avatar',
             'followers_count', 'following_count', 'publications_count',
             'is_following'
         )
@@ -76,7 +77,44 @@ class PublicationSerializer(serializers.ModelSerializer):
 
 
 class PublicationWriteSerializer(serializers.ModelSerializer):
+    media = serializers.ListField(
+        child=serializers.FileField(), write_only=True,
+        required=False, max_length=10,
+    )
+
     class Meta:
         model = Publication
-        fields = ("id", "text")
+        fields = ("id", "text", "media")
         read_only_fields = ("id",)
+
+    def validate(self, attrs):
+        if self.instance is None and not attrs.get("media"):
+            raise serializers.ValidationError("Потрібно додати хоча б один файл медіа.")
+        return attrs
+
+    def create(self, validated_data):
+        files = validated_data.pop("media", [])
+        publication = super().create(validated_data)
+        attach_media(publication, files)
+        return publication
+
+    def update(self, instance, validated_data):
+        validated_data.pop("media", None)
+        return super().update(instance, validated_data)
+
+
+class NotificationSerializer(serializers.ModelSerializer):
+    sender = ProfileMiniSerializer(source="sender.profile", read_only=True)
+
+    class Meta:
+        model = Notification
+        fields = ('id', 'sender', 'message', 'is_read', 'created_at')
+        read_only_fields = fields
+
+
+class MarkReadSerializer(serializers.Serializer):
+    ids = serializers.ListField(
+        child=serializers.IntegerField(min_value=1),
+        allow_empty=False,
+        max_length=200,
+    )

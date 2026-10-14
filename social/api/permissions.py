@@ -6,5 +6,12 @@ class IsOwnerOrReadOnly(permissions.BasePermission):
     def has_object_permission(self, request, view, obj):
         if request.method in permissions.SAFE_METHODS:
             return True
-        owner_profile = getattr(obj, getattr(view, "owner_field", self.owner_field))
-        return owner_profile.user == request.user
+        owner = getattr(obj, getattr(view, "owner_field", self.owner_field))
+        owner_user = getattr(owner, "user", owner)
+        return owner_user == request.user
+
+
+class IsSiteAdmin(permissions.BasePermission):
+    def has_permission(self, request, view):
+        u = request.user
+        return u.is_authenticated and (u.is_superuser or u.groups.filter(name="Адміністратор").exists())

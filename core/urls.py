@@ -22,6 +22,7 @@ from django.conf.urls.static import static
 import social
 
 urlpatterns = [
+    path("api-auth/", include("rest_framework.urls")),
     path('admin/', admin.site.urls),
     path('', include('social.urls')),
     path('chat/', include('chat.urls')),
