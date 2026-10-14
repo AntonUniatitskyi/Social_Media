@@ -9,7 +9,7 @@ from rest_framework.pagination import CursorPagination
 from rest_framework.response import Response
 
 from chat.models import ChatGroup, ChatInvitation, GroupMessage
-from chat.services import broadcast_message
+from chat.services import broadcast_message, kick_from_chat
 from .serializers import (
     ChatSerializer, GroupChatWriteSerializer, InvitationSerializer,
     MessageCreateSerializer, MessageSerializer, TargetUserSerializer,
@@ -117,6 +117,7 @@ class ChatViewSet(viewsets.ModelViewSet):
         if int(user_id) == chat.admin_id:
             raise ValidationError("Адміністратора не можна видалити з чату.")
         chat.members.remove(int(user_id))
+        kick_from_chat(chat.pk, int(user_id))
         return Response(status=status.HTTP_204_NO_CONTENT)
 
     @action(detail=True, methods=["post"])
@@ -127,6 +128,7 @@ class ChatViewSet(viewsets.ModelViewSet):
         if chat.admin_id == request.user.id:
             raise ValidationError("Адміністратор не може покинути чат. Видаліть його.")
         chat.members.remove(request.user)
+        kick_from_chat(chat.pk, request.user.id)
         return Response(status=status.HTTP_204_NO_CONTENT)
 
 
