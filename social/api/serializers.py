@@ -7,6 +7,13 @@ from social.models import Publication, Comment, Profile, MediaItem, Notification
 
 from social.services import attach_media
 
+import os
+from django.db import transaction
+from PIL import UnidentifiedImageError
+
+ALLOWED_MEDIA_EXT = {".jpg", ".jpeg", ".png", ".gif", ".webp", ".mp4", ".mov"}
+MAX_MEDIA_SIZE = 50 * 1024 * 1024
+
 class ProfileMiniSerializer(serializers.ModelSerializer):
     class Meta:
         model = Profile
@@ -96,10 +103,22 @@ class PublicationWriteSerializer(serializers.ModelSerializer):
             raise serializers.ValidationError("Потрібно додати хоча б один файл медіа.")
         return attrs
 
+    def validate_media(self, files):
+        for f in files:
+            if os.path.splitext(f.name)[1].lower() not in ALLOWED_MEDIA_EXT:
+                raise serializers.ValidationError("Підтримуються JPG, PNG, GIF, WebP, MP4 і MOV.")
+            if f.size > MAX_MEDIA_SIZE:
+                raise serializers.ValidationError("Файл завеликий: максимум 50 МБ.")
+        return files
+
     def create(self, validated_data):
         files = validated_data.pop("media", [])
-        publication = super().create(validated_data)
-        attach_media(publication, files)
+        try:
+            with transaction.atomic():
+                publication = super().create(validated_data)
+                attach_media(publication, files)
+        except (UnidentifiedImageError, OSError):
+            raise serializers.ValidationError({"media": "Не вдалося обробити один із файлів."})
         return publication
 
     def update(self, instance, validated_data):

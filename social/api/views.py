@@ -9,7 +9,8 @@ from social.services import notify
 
 from social.models import Publication, Comment, Notification
 from .serializers import PublicationSerializer, PublicationWriteSerializer, CommentSerializer, ProfileSerializer, \
-    NotificationSerializer, MarkReadSerializer, ComplaintCreateSerializer, ComplaintSerializer, RegisterSerializer
+    NotificationSerializer, MarkReadSerializer, ComplaintCreateSerializer, ComplaintSerializer, RegisterSerializer, \
+    ProfileMiniSerializer
 from .permissions import IsOwnerOrReadOnly, IsSiteAdmin
 
 from django.db.models import Exists, OuterRef
@@ -110,7 +111,9 @@ class CommentViewSet(viewsets.ModelViewSet):
         return queryset
 
     def perform_create(self, serializer):
-        serializer.save(user=self.request.user.profile)
+        comment = serializer.save(user=self.request.user.profile)
+        notify(comment.publication.profile.user, self.request.user,
+               f"{self.request.user.username} залишив коментар до вашої публікації")
 
 
 class ProfileViewSet(mixins.ListModelMixin, mixins.RetrieveModelMixin, mixins.UpdateModelMixin, viewsets.GenericViewSet):
@@ -146,6 +149,28 @@ class ProfileViewSet(mixins.ListModelMixin, mixins.RetrieveModelMixin, mixins.Up
         profile.followers.remove(request.user)
         return Response({"is_following": False,
                          "followers_count": profile.followers.count()})
+
+    def _page(self, qs):
+        page = self.paginate_queryset(qs)
+        data = ProfileMiniSerializer(page, many=True, context=self.get_serializer_context()).data
+        return self.get_paginated_response(data)
+
+    @action(detail=True, methods=["get"])
+    def followers(self, request, uusername=None):
+        profile = self.get_object()
+        return self._page(Profile.objects.filter(user__following_profiles=profile).order_by("uusername"))
+
+    @action(detail=True, methods=["get"])
+    def following(self, request, uusername=None):
+        profile = self.get_object()
+        return self._page(profile.user.following_profiles.order_by("uusername"))
+
+    @action(detail=False, methods=["get"], permission_classes=[permissions.IsAuthenticated])
+    def recommended(self, request):
+        qs = (Profile.objects.exclude(user=request.user)
+        .exclude(followers=request.user).order_by("?")[:5])
+        data = ProfileMiniSerializer(qs, many=True, context=self.get_serializer_context()).data
+        return Response(data)
 
 
 class NotificationViewSet(mixins.ListModelMixin, viewsets.GenericViewSet):

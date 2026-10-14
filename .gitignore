@@ -10,6 +10,8 @@ __pycache__/
 *.pyd
 
 .env
+.direnv/
+
 
 *.sqlite3
 

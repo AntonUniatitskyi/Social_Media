@@ -24,11 +24,11 @@ import social
 from social.api.views import RegisterView
 
 urlpatterns = [
-    path("api-auth/", include("rest_framework.urls")),
-    path("auth/token/", TokenObtainPairView.as_view()),
-    path("auth/token/refresh/", TokenRefreshView.as_view()),
+    path("api/v1/api-auth/", include("rest_framework.urls")),
+    path("api/v1/auth/token/", TokenObtainPairView.as_view()),
+    path("api/v1/auth/token/refresh/", TokenRefreshView.as_view()),
 
-    path("auth/register/", RegisterView.as_view(), name="api-register"),
+    path("api/v1/auth/register/", RegisterView.as_view(), name="api-register"),
     path('admin/', admin.site.urls),
     path('', include('social.urls')),
     path('chat/', include('chat.urls')),

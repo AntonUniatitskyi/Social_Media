@@ -3,6 +3,11 @@
 *.tmp
 .comands.txt
 env/
+.direnv/
+frontend/node_modules
+db.sqlite3
+media/
+staticfiles/
 
 __pycache__/
 *.pyc
