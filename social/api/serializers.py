@@ -1,3 +1,5 @@
+from django.contrib.auth.models import User, Group
+from django.contrib.auth.password_validation import validate_password
 from rest_framework import serializers
 from rest_framework.exceptions import ValidationError
 
@@ -148,3 +150,40 @@ class ComplaintSerializer(serializers.ModelSerializer):
         model = Complaint
         fields = ('id', 'user', 'publication', 'reason', 'text', 'created_at', 'accepted')
         read_only_fields = fields
+
+
+class RegisterSerializer(serializers.ModelSerializer):
+    password = serializers.CharField(
+        write_only=True,
+        required=True,
+        validators=[validate_password]
+    )
+    email = serializers.EmailField(required=True)
+
+    class Meta:
+        model = User
+        fields = ('username', 'email', 'password')
+        extra_kwargs = {"username": {"max_length": 30}}
+
+    def validate_email(self, value):
+        value = value.lower()
+        if User.objects.filter(email__iexact=value).exists():
+            raise serializers.ValidationError("Користувач з таким email вже існує.")
+        return value
+
+    def validate_username(self, value):
+        if (User.objects.filter(username__iexact=value).exists()
+                or Profile.objects.filter(uusername__iexact=value).exists()):
+            raise serializers.ValidationError("Користувач з таким ім'ям вже існує.")
+        return value
+
+    def create(self, validated_data):
+        user = User.objects.create_user(
+            username=validated_data['username'],
+            email=validated_data['email'],
+            password=validated_data['password']
+        )
+
+        user_group, created = Group.objects.get_or_create(name='Користувач')
+        user.groups.add(user_group)
+        return user

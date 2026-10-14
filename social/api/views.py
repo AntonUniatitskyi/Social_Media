@@ -1,13 +1,15 @@
 from django.db.models import Count
-from rest_framework import viewsets, permissions, mixins, status
+from rest_framework import viewsets, permissions, mixins, status, generics
 from rest_framework.decorators import action
 from rest_framework.response import Response
+from rest_framework_simplejwt.tokens import RefreshToken
+
 from social.models import Profile, Complaint
 from social.services import notify
 
 from social.models import Publication, Comment, Notification
 from .serializers import PublicationSerializer, PublicationWriteSerializer, CommentSerializer, ProfileSerializer, \
-    NotificationSerializer, MarkReadSerializer, ComplaintCreateSerializer, ComplaintSerializer
+    NotificationSerializer, MarkReadSerializer, ComplaintCreateSerializer, ComplaintSerializer, RegisterSerializer
 from .permissions import IsOwnerOrReadOnly, IsSiteAdmin
 
 from django.db.models import Exists, OuterRef
@@ -233,3 +235,27 @@ class ComplaintViewSet(
 
         complaint.reject_complaint()
         return Response({"detail": "Скаргу відхилено.", "accepted": False})
+
+
+class RegisterView(generics.CreateAPIView):
+    serializer_class = RegisterSerializer
+    permission_classes = [permissions.AllowAny]
+
+    def create(self, request, *args, **kwargs):
+        serializer = self.get_serializer(data=request.data)
+        serializer.is_valid(raise_exception=True)
+        user = serializer.save()
+        refresh = RefreshToken.for_user(user)
+        response_data = {
+            "user": {
+                "id": user.id,
+                "username": user.username,
+                "email": user.email
+            },
+            "tokens": {
+                "refresh": str(refresh),
+                "access": str(refresh.access_token),
+            }
+        }
+
+        return Response(response_data, status=status.HTTP_201_CREATED)

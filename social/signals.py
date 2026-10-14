@@ -7,10 +7,10 @@ from .models import Profile
 def create_or_update_user_profile(sender, instance, created, **kwargs):
     if created:
         Profile.objects.create(user=instance)
-    else:
-        instance.profile.save()
 
 @receiver(post_migrate)
 def create_default_groups(sender, **kwargs):
-    Group.objects.get_or_create(name='Адміністратор')
-    Group.objects.get_or_create(name='Користувач')
+    if sender.name != "social":
+        return
+    Group.objects.get_or_create(name="Адміністратор")
+    Group.objects.get_or_create(name="Користувач")

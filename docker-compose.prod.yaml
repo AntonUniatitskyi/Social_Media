@@ -1,0 +1,13 @@
+services:
+  db:
+    restart: unless-stopped
+
+  redis:
+    restart: unless-stopped
+
+  web:
+    restart: unless-stopped
+    environment:
+      DEBUG: "0"
+    ports:
+      - "127.0.0.1:8000:8000"

@@ -1,10 +1,20 @@
-FROM python:3.12-slim
+FROM python:3.13-slim
 
-WORKDIR /social_media
-COPY . /social_media/
+ENV PYTHONDONTWRITEBYTECODE=1 \
+    PYTHONUNBUFFERED=1
 
+WORKDIR /app
+
+COPY requirements.txt .
 RUN pip install --no-cache-dir -r requirements.txt
-RUN python manage.py collectstatic
-RUN python manage.py migrate
 
+COPY . .
+
+RUN useradd -m app \
+    && mkdir -p /app/staticfiles /app/media \
+    && chown -R app:app /app
+USER app
+
+EXPOSE 8000
+ENTRYPOINT ["sh", "/app/docker/entrypoint.sh"]
 CMD ["daphne", "-b", "0.0.0.0", "-p", "8000", "core.asgi:application"]
