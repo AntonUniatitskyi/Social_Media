@@ -1,5 +1,7 @@
 from rest_framework import serializers
-from social.models import Publication, Comment, Profile, MediaItem, Notification
+from rest_framework.exceptions import ValidationError
+
+from social.models import Publication, Comment, Profile, MediaItem, Notification, Complaint
 
 from social.services import attach_media
 
@@ -118,3 +120,31 @@ class MarkReadSerializer(serializers.Serializer):
         allow_empty=False,
         max_length=200,
     )
+
+
+class ComplaintCreateSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = Complaint
+        fields = ('publication', 'reason', 'text')
+
+    def validate(self, attrs):
+        request = self.context.get("request")
+        user = request.user
+        publication = attrs.get("publication")
+
+        if publication.profile.user == user:
+            raise ValidationError("Ви не можете поскаржитися на власну публікацію.")
+
+        if Complaint.objects.filter(user=user, publication=publication, accepted=None).exists():
+            raise ValidationError("Ви вже подали скаргу на цю публікацію, вона знаходиться на розгляді.")
+
+        return attrs
+
+
+class ComplaintSerializer(serializers.ModelSerializer):
+    user = ProfileMiniSerializer(source="user.profile", read_only=True)
+
+    class Meta:
+        model = Complaint
+        fields = ('id', 'user', 'publication', 'reason', 'text', 'created_at', 'accepted')
+        read_only_fields = fields

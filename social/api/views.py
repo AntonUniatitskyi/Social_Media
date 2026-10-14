@@ -2,13 +2,13 @@ from django.db.models import Count
 from rest_framework import viewsets, permissions, mixins, status
 from rest_framework.decorators import action
 from rest_framework.response import Response
-from social.models import Profile
+from social.models import Profile, Complaint
 from social.services import notify
 
 from social.models import Publication, Comment, Notification
 from .serializers import PublicationSerializer, PublicationWriteSerializer, CommentSerializer, ProfileSerializer, \
-    NotificationSerializer, MarkReadSerializer
-from .permissions import IsOwnerOrReadOnly
+    NotificationSerializer, MarkReadSerializer, ComplaintCreateSerializer, ComplaintSerializer
+from .permissions import IsOwnerOrReadOnly, IsSiteAdmin
 
 from django.db.models import Exists, OuterRef
 
@@ -175,3 +175,61 @@ class NotificationViewSet(mixins.ListModelMixin, viewsets.GenericViewSet):
     def unread_count(self, request):
         count = self.get_queryset().filter(is_read=False).count()
         return Response({"unread": count})
+
+
+class ComplaintViewSet(
+    mixins.CreateModelMixin,
+    mixins.ListModelMixin,
+    mixins.RetrieveModelMixin,
+    viewsets.GenericViewSet,
+):
+    def get_queryset(self):
+        qs = Complaint.objects.select_related("user__profile", "publication").order_by('-created_at')
+        if self.action != "list":
+            return qs
+
+        accepted_param = self.request.query_params.get("accepted", "").lower()
+
+        if accepted_param == "true":
+            return qs.filter(accepted=True)
+        if accepted_param == "false":
+            return qs.filter(accepted=False)
+        if accepted_param == "all":
+            return qs
+        return qs.filter(accepted=None)
+
+    def get_serializer_class(self):
+        if self.action == "create":
+            return ComplaintCreateSerializer
+        return ComplaintSerializer
+
+    def get_permissions(self):
+        if self.action == "create":
+            return [permissions.IsAuthenticated()]
+        return [IsSiteAdmin()]
+
+    def perform_create(self, serializer):
+        serializer.save(user=self.request.user)
+
+    @action(detail=True, methods=["post"])
+    def accept(self, request, pk=None):
+        complaint = self.get_object()
+        if complaint.accepted is not None:
+            return Response(
+                {"detail": "Ця скарга вже була розглянута раніше."},
+                status=status.HTTP_400_BAD_REQUEST
+            )
+        complaint.accept_complaint()
+        return Response({"detail": "Скаргу прийнято. Публікацію видалено.", "accepted": True})
+
+    @action(detail=True, methods=["post"])
+    def reject(self, request, pk=None):
+        complaint = self.get_object()
+        if complaint.accepted is not None:
+            return Response(
+                {"detail": "Ця скарга вже була розглянута раніше."},
+                status=status.HTTP_400_BAD_REQUEST
+            )
+
+        complaint.reject_complaint()
+        return Response({"detail": "Скаргу відхилено.", "accepted": False})
