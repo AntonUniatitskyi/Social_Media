@@ -32,7 +32,8 @@ urlpatterns = [
     path('admin/', admin.site.urls),
     path('', include('social.urls')),
     path('chat/', include('chat.urls')),
-    path('api/v1/', include('social.api.urls'))
+    path('api/v1/', include('social.api.urls')),
+    path("api/v1/", include("chat.api.urls")),
 ]
 
 
