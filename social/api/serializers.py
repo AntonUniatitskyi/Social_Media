@@ -8,11 +8,15 @@ from social.models import Publication, Comment, Profile, MediaItem, Notification
 from social.services import attach_media
 
 import os
+import re
 from django.db import transaction
 from PIL import UnidentifiedImageError
 
 ALLOWED_MEDIA_EXT = {".jpg", ".jpeg", ".png", ".gif", ".webp", ".mp4", ".mov"}
 MAX_MEDIA_SIZE = 50 * 1024 * 1024
+
+UUSERNAME_RE = re.compile(r"[A-Za-z0-9._]{3,30}")
+MAX_AVATAR_SIZE = 5 * 1024 * 1024
 
 class ProfileMiniSerializer(serializers.ModelSerializer):
     class Meta:
@@ -33,12 +37,30 @@ class ProfileSerializer(serializers.ModelSerializer):
             'is_following'
         )
         read_only_fields = ('id',)
+        extra_kwargs = {"bio": {"max_length": 300}}
 
     def get_is_following(self, obj):
         request = self.context.get('request')
         if not request or not request.user.is_authenticated:
             return False
         return obj.followers.filter(id=request.user.id).exists()
+
+
+    def validate_uusername(self, value):
+        value = value.strip()
+        if not UUSERNAME_RE.fullmatch(value):
+            raise serializers.ValidationError("3–30 символів: літери, цифри, крапка та підкреслення.")
+        taken = Profile.objects.filter(uusername__iexact=value)
+        if self.instance:
+            taken = taken.exclude(pk=self.instance.pk)
+        if taken.exists():
+            raise serializers.ValidationError("Цей нік уже зайнятий.")
+        return value
+
+    def validate_avatar(self, f):
+        if f and f.size > MAX_AVATAR_SIZE:
+            raise serializers.ValidationError("Аватар завеликий: максимум 5 МБ.")
+        return f
 
 
 class MediaItemSerializer(serializers.ModelSerializer):
@@ -64,8 +86,8 @@ class PublicationSerializer(serializers.ModelSerializer):
     media_items = MediaItemSerializer(many=True, read_only=True)
     likes_total = serializers.IntegerField(read_only=True)
     comments_total = serializers.IntegerField(read_only=True)
-    is_liked = serializers.SerializerMethodField()
-    is_saved = serializers.SerializerMethodField()
+    is_liked = serializers.BooleanField(read_only=True, default=False)
+    is_saved = serializers.BooleanField(read_only=True, default=False)
 
     class Meta:
         model = Publication
@@ -73,19 +95,7 @@ class PublicationSerializer(serializers.ModelSerializer):
             "id", "profile", "text", "timestamp", "media_items",
             "likes_total", "comments_total", "is_liked", "is_saved",
         )
-
-    def _user(self):
-        request = self.context.get("request")
-        return request.user if request and request.user.is_authenticated else None
-
-    def get_is_liked(self, obj):
-        user = self._user()
-        return obj.is_liked_by(user) if user else False
-
-    def get_is_saved(self, obj):
-        user = self._user()
-        return obj.is_saved_by(user) if user else False
-
+        
 
 class PublicationWriteSerializer(serializers.ModelSerializer):
     media = serializers.ListField(

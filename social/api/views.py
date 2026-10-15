@@ -1,4 +1,4 @@
-from django.db.models import Count
+from django.db.models import Count, Exists, OuterRef
 from rest_framework import viewsets, permissions, mixins, status, generics
 from rest_framework.decorators import action
 from rest_framework.response import Response
@@ -20,7 +20,7 @@ class PublicationViewSet(viewsets.ModelViewSet):
     permission_classes = [permissions.IsAuthenticatedOrReadOnly, IsOwnerOrReadOnly]
 
     def get_queryset(self):
-        return (
+        qs = (
             Publication.objects
             .select_related("profile")
             .prefetch_related("media_items")
@@ -28,8 +28,20 @@ class PublicationViewSet(viewsets.ModelViewSet):
                 likes_total=Count("likes", distinct=True),
                 comments_total=Count("comments", distinct=True),
             )
-            .order_by("-timestamp")
         )
+        user = self.request.user
+        if user.is_authenticated:
+            qs = qs.annotate(
+                is_liked=Exists(Publication.likes.through.objects.filter(
+                    publication_id=OuterRef("pk"), user_id=user.id)),
+                is_saved=Exists(Publication.saved.through.objects.filter(
+                    publication_id=OuterRef("pk"), user_id=user.id)),
+            )
+        if self.action == "list":                       # сетка публикаций на странице профиля
+            author = self.request.query_params.get("author")
+            if author:
+                qs = qs.filter(profile__uusername__iexact=author)
+        return qs.order_by("-timestamp")
 
     def get_serializer_class(self):
         if self.action in ("create", "update", "partial_update"):
