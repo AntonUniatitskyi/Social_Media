@@ -8,8 +8,8 @@ export function Avatar({ src, name, className = 'size-10' }: {
   }
   const letter = (name ?? '').replace(/[^\p{L}\p{N}]/gu, '').charAt(0).toUpperCase() || '?'
   return (
-    <span aria-hidden className={`${className} grid shrink-0 place-items-center rounded-full bg-sand text-sm font-medium text-stone-700`}>
-      {letter}
+    <span aria-hidden className={`${className} @container grid shrink-0 place-items-center rounded-full bg-sand`}>
+      <span className="text-[45cqw] font-medium leading-none text-bark/70">{letter}</span>
     </span>
   )
 }

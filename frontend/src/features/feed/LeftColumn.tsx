@@ -6,7 +6,7 @@ import type { Invitation, Paginated } from '../../api/types'
 import { Avatar } from '../ui/Avatar'
 import { btnDark, btnSoft, card, focusRing } from '../ui/cls'
 
-function InviteItem({ invite }: { invite: Invitation }) {
+export function InviteItem({ invite }: { invite: Invitation }) {
   const qc = useQueryClient()
   const done = () => {
     qc.invalidateQueries({ queryKey: ['invitations'] })

@@ -12,3 +12,5 @@ export const iconBtn = `grid size-9 place-items-center rounded-lg text-stone-600
 export const btnPrimaryLg = `inline-flex h-11 items-center justify-center gap-2 rounded-xl bg-bark px-6 font-semibold text-cream transition-colors hover:bg-clay disabled:opacity-50 ${focusRing}`
 
 export const btnSoftLg = `inline-flex h-11 items-center justify-center rounded-xl border border-sand bg-white/60 px-4 font-medium text-bark transition-colors hover:bg-sand/40 ${focusRing}`
+
+export const rowFocus = 'focus-visible:outline-2 focus-visible:-outline-offset-2 focus-visible:outline-clay'

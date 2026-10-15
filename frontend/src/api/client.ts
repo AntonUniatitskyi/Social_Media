@@ -3,6 +3,7 @@ const BASE = '/api/v1'
 let access: string | null = null
 
 export const tokens = {
+  getAccess: () => access,
   setAccess: (t: string | null) => { access = t },
   getRefresh: () => localStorage.getItem('refresh'),
   setRefresh: (t: string | null) =>
@@ -58,3 +59,5 @@ export async function api<T>(path: string, init: RequestInit = {}, retry = true)
   if (!res.ok) throw new ApiError(res.status, await res.json().catch(() => null))
   return res.status === 204 ? (undefined as T) : res.json()
 }
+
+export { refresh as refreshAccess }

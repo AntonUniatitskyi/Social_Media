@@ -1,19 +1,25 @@
 import { useState } from 'react'
 import { Link } from 'react-router-dom'
-import { useMutation } from '@tanstack/react-query'
-import { Bookmark, Check, Flag, MessageCircle, PawPrint, Share2 } from 'lucide-react'
+import { useMutation, useQueryClient } from '@tanstack/react-query'
+import { Bookmark, Check, Flag, MessageCircle, PawPrint, Share2, Trash2 } from 'lucide-react'
 import { api } from '../../api/client'
 import type { Publication } from '../../api/types'
 import { fullDate, timeAgo } from '../../lib/time'
 import { useMe } from '../auth/auth'
 import { Avatar } from '../ui/Avatar'
-import { card, focusRing, iconBtn } from '../ui/cls'
+import { btnSoft, card, focusRing, iconBtn } from '../ui/cls'
+import { Dialog } from '../ui/Dialog'
 import { Comments } from './Comments'
 import { MediaCarousel } from './MediaCarousel'
 
-const action = `inline-flex h-10 items-center gap-1.5 rounded-xl px-2.5 text-stone-600 transition-colors hover:bg-sand/40 hover:text-stone-900 ${focusRing}`
+const action = `inline-flex h-10 items-center gap-1.5 rounded-xl px-2.5 text-stone-600 transition-colors hover:bg-sand/40 hover:text-bark ${focusRing}`
 
-export function PostCard({ post, onComplain }: { post: Publication; onComplain: (id: number) => void }) {
+export function PostCard({ post, onComplain, onDeleted }: {
+  post: Publication
+  onComplain: (id: number) => void
+  onDeleted?: () => void
+}) {
+  const qc = useQueryClient()
   const me = useMe().data
   const isMine = me?.id === post.profile.id
   const profileLink = `/u/${post.profile.uusername}`
@@ -25,6 +31,7 @@ export function PostCard({ post, onComplain }: { post: Publication; onComplain: 
   const [showComments, setShowComments] = useState(false)
   const [expanded, setExpanded] = useState(false)
   const [copied, setCopied] = useState(false)
+  const [confirmDelete, setConfirmDelete] = useState(false)
 
   const like = useMutation({
     mutationFn: () =>
@@ -45,6 +52,18 @@ export function PostCard({ post, onComplain }: { post: Publication; onComplain: 
     onMutate: () => { setSaved(!saved); return { saved } },
     onError: (_e, _v, prev) => { if (prev) setSaved(prev.saved) },
     onSuccess: (d) => setSaved(d.saved),
+  })
+
+  const del = useMutation({
+    mutationFn: () => api<void>(`/publications/${post.id}/`, { method: 'DELETE' }),
+    onSuccess: () => {
+      setConfirmDelete(false)
+      qc.invalidateQueries({ queryKey: ['grid'] })
+      qc.invalidateQueries({ queryKey: ['feed'] })
+      qc.invalidateQueries({ queryKey: ['me'] })
+      qc.invalidateQueries({ queryKey: ['profile'] })   // счётчик публикаций на странице профиля
+      onDeleted?.()
+    },
   })
 
   const toggleLike = () => { if (!like.isPending) like.mutate() }
@@ -74,7 +93,11 @@ export function PostCard({ post, onComplain }: { post: Publication; onComplain: 
             {timeAgo(post.timestamp)}
           </time>
         </div>
-        {!isMine && (
+        {isMine ? (
+          <button type="button" onClick={() => setConfirmDelete(true)} aria-label="Видалити публікацію" className={iconBtn}>
+            <Trash2 className="size-[18px]" />
+          </button>
+        ) : (
           <button type="button" onClick={() => onComplain(post.id)} aria-label="Поскаржитися на публікацію" className={iconBtn}>
             <Flag className="size-[18px]" />
           </button>
@@ -135,7 +158,7 @@ export function PostCard({ post, onComplain }: { post: Publication; onComplain: 
             {post.text}
           </p>
           {long && !expanded && (
-            <button type="button" onClick={() => setExpanded(true)} className="text-sm text-stone-500 hover:text-stone-800">
+            <button type="button" onClick={() => setExpanded(true)} className="text-sm text-stone-500 hover:text-bark">
               ще
             </button>
           )}
@@ -145,6 +168,24 @@ export function PostCard({ post, onComplain }: { post: Publication; onComplain: 
       {showComments && (
         <Comments publicationId={post.id} onCountChange={(d) => setCommentsTotal((t) => t + d)} />
       )}
+
+      <Dialog open={confirmDelete} onClose={() => setConfirmDelete(false)} title="Видалити публікацію?">
+        <p className="text-sm text-stone-600">Публікацію, фото та коментарі буде видалено назавжди.</p>
+        {del.isError && (
+          <p role="alert" className="mt-3 text-sm text-red-800">Не вдалося видалити. Спробуйте ще раз.</p>
+        )}
+        <div className="mt-5 flex justify-end gap-2">
+          <button type="button" onClick={() => setConfirmDelete(false)} className={btnSoft}>Скасувати</button>
+          <button
+            type="button"
+            onClick={() => del.mutate()}
+            disabled={del.isPending}
+            className={`rounded-lg bg-red-700 px-3 py-1.5 text-sm font-medium text-white transition-colors hover:bg-red-800 disabled:opacity-60 ${focusRing}`}
+          >
+            {del.isPending ? 'Видаляємо…' : 'Видалити'}
+          </button>
+        </div>
+      </Dialog>
     </article>
   )
 }

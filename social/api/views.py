@@ -1,20 +1,104 @@
-from django.db.models import Count, Exists, OuterRef
-from rest_framework import viewsets, permissions, mixins, status, generics
+from django.db import transaction
+from django.db.models import Count, Exists, OuterRef, Case, F, IntegerField, Value, When
+from rest_framework import viewsets, permissions, mixins, status, generics, filters
 from rest_framework.decorators import action
 from rest_framework.response import Response
 from rest_framework_simplejwt.tokens import RefreshToken
 
 from social.models import Profile, Complaint
-from social.services import notify
+from social.services import notify, notify_many
 
 from social.models import Publication, Comment, Notification
-from .serializers import PublicationSerializer, PublicationWriteSerializer, CommentSerializer, ProfileSerializer, \
-    NotificationSerializer, MarkReadSerializer, ComplaintCreateSerializer, ComplaintSerializer, RegisterSerializer, \
-    ProfileMiniSerializer
+from .serializers import (
+    CommentSerializer,
+    ComplaintCreateSerializer,
+    ComplaintSerializer,
+    MarkReadSerializer,
+    NotificationSerializer,
+    ProfileCardSerializer,
+    ProfileMiniSerializer,
+    ProfileSerializer,
+    PublicationSerializer,
+    PublicationWriteSerializer,
+    RegisterSerializer,
+)
 from .permissions import IsOwnerOrReadOnly, IsSiteAdmin
 
 from django.db.models import Exists, OuterRef
+from django.db.models.functions import Mod
 
+class ProfileViewSet(
+    mixins.ListModelMixin,
+    mixins.RetrieveModelMixin,
+    mixins.UpdateModelMixin,
+    viewsets.GenericViewSet,
+):
+    permission_classes = [permissions.IsAuthenticatedOrReadOnly, IsOwnerOrReadOnly]
+    owner_field = "user"
+    lookup_field = "uusername"
+    lookup_value_regex = r"[^/]+"
+    filter_backends = [filters.SearchFilter]
+    search_fields = ["uusername"]
+
+    def get_permissions(self):
+        if self.action in ("list", "followers", "following"):
+            return [permissions.IsAuthenticated()]
+        return super().get_permissions()
+
+    def get_queryset(self):
+        qs = Profile.objects.select_related("user").order_by("uusername")
+        user = self.request.user
+        if self.action == "list" and user.is_authenticated:
+            qs = qs.annotate(following_by_me=Exists(
+                Profile.followers.through.objects.filter(profile_id=OuterRef("pk"), user_id=user.id)
+            ))
+        return qs
+
+    def get_serializer_class(self):
+        return ProfileCardSerializer if self.action == "list" else ProfileSerializer
+
+    @action(detail=False, methods=["get"], permission_classes=[permissions.IsAuthenticated])
+    def me(self, request):
+        return Response(self.get_serializer(request.user.profile).data)
+
+    @action(detail=True, methods=["post"], permission_classes=[permissions.IsAuthenticated])
+    def follow(self, request, uusername=None):
+        profile = self.get_object()
+        if profile.user == request.user:
+            return Response({"detail": "Не можна підписатись на себе."},
+                            status=status.HTTP_400_BAD_REQUEST)
+        if not profile.followers.filter(id=request.user.id).exists():
+            profile.followers.add(request.user)
+            notify(profile.user, request.user, f"{request.user.username} підписався(лась) на вас",
+                   Notification.Kind.FOLLOW)
+        return Response({"is_following": True, "followers_count": profile.followers.count()})
+
+    @action(detail=True, methods=["post"], permission_classes=[permissions.IsAuthenticated])
+    def unfollow(self, request, uusername=None):
+        profile = self.get_object()
+        profile.followers.remove(request.user)
+        return Response({"is_following": False, "followers_count": profile.followers.count()})
+
+    def _page(self, qs):
+        page = self.paginate_queryset(qs)
+        data = ProfileMiniSerializer(page, many=True, context=self.get_serializer_context()).data
+        return self.get_paginated_response(data)
+
+    @action(detail=True, methods=["get"])
+    def followers(self, request, uusername=None):
+        profile = self.get_object()
+        return self._page(Profile.objects.filter(user__following_profiles=profile).order_by("uusername"))
+
+    @action(detail=True, methods=["get"])
+    def following(self, request, uusername=None):
+        profile = self.get_object()
+        return self._page(profile.user.following_profiles.order_by("uusername"))
+
+    @action(detail=False, methods=["get"], permission_classes=[permissions.IsAuthenticated])
+    def recommended(self, request):
+        qs = (Profile.objects.exclude(user=request.user)
+              .exclude(followers=request.user).order_by("?")[:5])
+        return Response(ProfileMiniSerializer(qs, many=True, context=self.get_serializer_context()).data)
 
 class PublicationViewSet(viewsets.ModelViewSet):
     permission_classes = [permissions.IsAuthenticatedOrReadOnly, IsOwnerOrReadOnly]
@@ -51,9 +135,11 @@ class PublicationViewSet(viewsets.ModelViewSet):
     def perform_create(self, serializer):
         profile = self.request.user.profile
         publication = serializer.save(profile=profile)
-        for follower in profile.followers.all():
-            notify(follower, self.request.user,
-                   f"{self.request.user.username} створив нову публікацію")
+        notify_many(
+            profile.followers.all(), self.request.user,
+            f"{self.request.user.username} створив нову публікацію",
+            Notification.Kind.POST, publication,
+        )
 
     @action(detail=True, methods=["post"], permission_classes=[permissions.IsAuthenticated])
     def like(self, request, pk=None):
@@ -76,13 +162,33 @@ class PublicationViewSet(viewsets.ModelViewSet):
 
     @action(detail=False, methods=["get"], permission_classes=[permissions.IsAuthenticated])
     def feed(self, request):
-        qs = self.get_queryset().annotate(
-            is_followed=Exists(
-                Profile.followers.through.objects.filter(
-                    profile_id=OuterRef("profile_id"), user_id=request.user.id
-                )
+        try:
+            seed = min(max(1, int(request.query_params.get("seed", 1))), 1_000_000)
+        except ValueError:
+            seed = 1
+
+        qs = (
+            self.get_queryset()
+            .exclude(profile=request.user.profile)
+            .annotate(
+                is_followed=Exists(
+                    Profile.followers.through.objects.filter(
+                        profile_id=OuterRef("profile_id"), user_id=request.user.id
+                    )
+                ),
+                rand_key=Mod(F("id") * seed, 1000003),
             )
-        ).order_by("-is_followed", "-timestamp")
+            .order_by(
+                "-is_followed",                                  # сначала подписки
+                Case(                                            # у подписок ключ один, решает дата
+                    When(is_followed=True, then=Value(0)),
+                    default=F("rand_key"),                       # у остальных решает seed
+                    output_field=IntegerField(),
+                ),
+                "-timestamp",
+                "-id",                                           # стабильная пагинация при равных ключах
+            )
+        )
         page = self.paginate_queryset(qs)
         serializer = PublicationSerializer(page, many=True, context=self.get_serializer_context())
         return self.get_paginated_response(serializer.data)
@@ -110,6 +216,7 @@ class CommentViewSet(viewsets.ModelViewSet):
     owner_field = "user"
     serializer_class = CommentSerializer
     permission_classes = [permissions.IsAuthenticatedOrReadOnly, IsOwnerOrReadOnly]
+    http_method_names = ["get", "post", "patch", "delete", "head", "options"]
 
     def get_queryset(self):
         queryset = (
@@ -125,64 +232,8 @@ class CommentViewSet(viewsets.ModelViewSet):
     def perform_create(self, serializer):
         comment = serializer.save(user=self.request.user.profile)
         notify(comment.publication.profile.user, self.request.user,
-               f"{self.request.user.username} залишив коментар до вашої публікації")
-
-
-class ProfileViewSet(mixins.ListModelMixin, mixins.RetrieveModelMixin, mixins.UpdateModelMixin, viewsets.GenericViewSet):
-    serializer_class = ProfileSerializer
-    permission_classes = [permissions.IsAuthenticatedOrReadOnly, IsOwnerOrReadOnly]
-    owner_field = "user"
-    lookup_field = "uusername"
-    lookup_value_regex = r"[^/]+"
-
-    def get_queryset(self):
-        return Profile.objects.select_related("user").order_by("uusername")
-
-    @action(detail=False, methods=["get"], permission_classes=[permissions.IsAuthenticated])
-    def me(self, request):
-        serializer = self.get_serializer(request.user.profile)
-        return Response(serializer.data)
-
-    @action(detail=True, methods=["post"], permission_classes=[permissions.IsAuthenticated])
-    def follow(self, request, uusername=None):
-        profile = self.get_object()
-        if profile.user == request.user:
-            return Response({"detail": "Не можна підписатись на себе."},
-                            status=status.HTTP_400_BAD_REQUEST)
-        profile.followers.add(request.user)
-        notify(profile.user, request.user, f"{request.user.username} підписався(лась) на вас")
-        return Response({"is_following": True,
-                         "followers_count": profile.followers.count()})
-
-
-    @action(detail=True, methods=["post"], permission_classes=[permissions.IsAuthenticated])
-    def unfollow(self, request, uusername=None):
-        profile = self.get_object()
-        profile.followers.remove(request.user)
-        return Response({"is_following": False,
-                         "followers_count": profile.followers.count()})
-
-    def _page(self, qs):
-        page = self.paginate_queryset(qs)
-        data = ProfileMiniSerializer(page, many=True, context=self.get_serializer_context()).data
-        return self.get_paginated_response(data)
-
-    @action(detail=True, methods=["get"])
-    def followers(self, request, uusername=None):
-        profile = self.get_object()
-        return self._page(Profile.objects.filter(user__following_profiles=profile).order_by("uusername"))
-
-    @action(detail=True, methods=["get"])
-    def following(self, request, uusername=None):
-        profile = self.get_object()
-        return self._page(profile.user.following_profiles.order_by("uusername"))
-
-    @action(detail=False, methods=["get"], permission_classes=[permissions.IsAuthenticated])
-    def recommended(self, request):
-        qs = (Profile.objects.exclude(user=request.user)
-        .exclude(followers=request.user).order_by("?")[:5])
-        data = ProfileMiniSerializer(qs, many=True, context=self.get_serializer_context()).data
-        return Response(data)
+            f"{self.request.user.username} залишив коментар до вашої публікації",
+            Notification.Kind.COMMENT, comment.publication)
 
 
 class NotificationViewSet(mixins.ListModelMixin, viewsets.GenericViewSet):
@@ -277,7 +328,9 @@ class ComplaintViewSet(
 class RegisterView(generics.CreateAPIView):
     serializer_class = RegisterSerializer
     permission_classes = [permissions.AllowAny]
+    authentication_classes = []
 
+    @transaction.atomic
     def create(self, request, *args, **kwargs):
         serializer = self.get_serializer(data=request.data)
         serializer.is_valid(raise_exception=True)

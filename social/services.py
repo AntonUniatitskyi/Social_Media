@@ -4,9 +4,11 @@ from django.core.files.base import ContentFile
 from PIL import Image
 from .models import Notification, MediaItem
 
-def notify(recipient, sender, message):
+def notify(recipient, sender, message, kind=Notification.Kind.OTHER, publication=None):
     if recipient != sender:
-        Notification.objects.create(recipient=recipient, sender=sender, message=message)
+        Notification.objects.create(
+            recipient=recipient, sender=sender, message=message, kind=kind, publication=publication
+        )
 
 def crop_to_aspect_ratio(image, target_ratio=(4, 3)):
     if image.mode in ('RGBA', 'LA'):
@@ -41,3 +43,9 @@ def attach_media(publication, files):
                                      file=ContentFile(buf.getvalue(), name=f.name))
         else:
             MediaItem.objects.create(publication=publication, file=f)
+
+def notify_many(recipients, sender, message, kind=Notification.Kind.OTHER, publication=None):
+    Notification.objects.bulk_create([
+        Notification(recipient=r, sender=sender, message=message, kind=kind, publication=publication)
+        for r in recipients if r != sender
+    ])

@@ -79,6 +79,12 @@ class CommentSerializer(serializers.ModelSerializer):
         model = Comment
         fields = ("id", "publication", "author", "text_com", "created_at")
         read_only_fields = ("id", "author", "created_at")
+        extra_kwargs = {"text_com": {"max_length": 500}}
+
+    def validate_publication(self, value):
+        if self.instance is not None and value != self.instance.publication:
+            raise serializers.ValidationError("Не можна перенести коментар до іншої публікації.")
+        return value
 
 
 class PublicationSerializer(serializers.ModelSerializer):
@@ -141,7 +147,7 @@ class NotificationSerializer(serializers.ModelSerializer):
 
     class Meta:
         model = Notification
-        fields = ('id', 'sender', 'message', 'is_read', 'created_at')
+        fields = ('id', 'sender', 'kind', 'publication', 'message', 'is_read', 'created_at')
         read_only_fields = fields
 
 
@@ -216,3 +222,11 @@ class RegisterSerializer(serializers.ModelSerializer):
         user_group, created = Group.objects.get_or_create(name='Користувач')
         user.groups.add(user_group)
         return user
+
+
+class ProfileCardSerializer(serializers.ModelSerializer):
+    is_following = serializers.BooleanField(source="following_by_me", read_only=True, default=False)
+
+    class Meta:
+        model = Profile
+        fields = ('id', 'uusername', 'avatar', 'bio', 'is_following')

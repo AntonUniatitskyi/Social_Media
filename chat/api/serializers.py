@@ -6,6 +6,8 @@ from chat.models import ChatGroup, ChatInvitation, GroupMessage
 IMAGE_EXT = (".jpg", ".jpeg", ".png", ".gif", ".webp")
 MAX_FILE_SIZE = 10 * 1024 * 1024  # 10 МБ
 
+CHAT_FILE_EXT = {".jpg", ".jpeg", ".png", ".gif", ".webp", ".mp4", ".mov", ".mp3",
+                 ".pdf", ".txt", ".zip", ".doc", ".docx", ".xls", ".xlsx"}
 
 class UserMiniSerializer(serializers.ModelSerializer):
     uusername = serializers.CharField(source="profile.uusername", read_only=True)
@@ -49,6 +51,8 @@ class MessageCreateSerializer(serializers.ModelSerializer):
         fields = ("body", "file")
 
     def validate_file(self, f):
+        if os.path.splitext(f.name)[1].lower() not in CHAT_FILE_EXT:
+            raise serializers.ValidationError("Цей тип файлу не підтримується.")
         if f.size > MAX_FILE_SIZE:
             raise serializers.ValidationError("Файл завеликий (максимум 10 МБ).")
         return f
@@ -70,12 +74,13 @@ class ChatSerializer(serializers.ModelSerializer):
     members = UserMiniSerializer(many=True, read_only=True)
     last_message_body = serializers.SerializerMethodField()
     last_message_at = serializers.SerializerMethodField()
+    admin_id = serializers.IntegerField(read_only=True)
 
     class Meta:
         model = ChatGroup
         fields = (
             "group_name", "title", "is_private", "is_admin", "members",
-            "last_message_body", "last_message_at",
+            "last_message_body", "last_message_at", "admin_id",
         )
 
     def get_title(self, obj):

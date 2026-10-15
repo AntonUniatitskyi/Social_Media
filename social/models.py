@@ -66,11 +66,21 @@ class MediaItem(models.Model):
 
 
 class Notification(models.Model):
+    class Kind(models.TextChoices):
+        FOLLOW = "follow"
+        COMMENT = "comment"
+        POST = "post"
+        OTHER = "other"
+
     recipient = models.ForeignKey(User, on_delete=models.CASCADE, related_name='notifications')
     sender = models.ForeignKey(User, on_delete=models.CASCADE)
     message = models.CharField(max_length=255)
     is_read = models.BooleanField(default=False)
     created_at = models.DateTimeField(auto_now_add=True)
+    kind = models.CharField(max_length=16, choices=Kind.choices, default=Kind.OTHER)
+    publication = models.ForeignKey(
+        "Publication", null=True, blank=True, on_delete=models.CASCADE, related_name="+"
+    )
 
     def __str__(self):
         return f"Уведомление для {self.recipient.username} от {self.sender.username}"

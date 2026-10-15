@@ -52,3 +52,43 @@ export interface Invitation {
   chat_title: string | null
   timestamp: string
 }
+
+export interface ProfileCard extends ProfileMini {
+  bio: string | null
+  is_following: boolean
+}
+
+export interface AppNotification {
+  id: number
+  sender: ProfileMini
+  kind: 'follow' | 'comment' | 'post' | 'other'
+  publication: number | null
+  message: string
+  is_read: boolean
+  created_at: string
+}
+
+export interface ChatMember { id: number; uusername: string; avatar: string | null }   // id пользователя, не профиля
+
+export interface Chat {
+  group_name: string
+  title: string
+  is_private: boolean
+  is_admin: boolean
+  admin_id: number | null
+  members: ChatMember[]
+  last_message_body: string | null
+  last_message_at: string | null
+}
+
+export interface ChatMessage {
+  id: number
+  author: ChatMember
+  body: string | null
+  file: string | null
+  filename: string | null
+  is_image: boolean
+  created: string
+}
+
+export interface CursorPage<T> { next: string | null; previous: string | null; results: T[] }
