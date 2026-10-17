@@ -40,7 +40,7 @@ export function SearchPage() {
   const [params, setParams] = useSearchParams()
   const [text, setText] = useState(params.get('q') ?? '')
   const q = useDebounced(text.trim(), 300)
-  useTitle(q ? Пошук: ${q} : 'Пошук')
+  useTitle(q ? 'Пошук: ' + q : 'Пошук')
   const searching = q.length >= MIN_CHARS
 
   // запрос живёт в адресе: кнопка «Назад» возвращает к результатам
