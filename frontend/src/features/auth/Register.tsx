@@ -5,8 +5,10 @@ import { Lock, Mail, User } from 'lucide-react'
 import { fieldErrors, register } from './auth'
 import { AuthLayout, linkCls, submitBtn } from './AuthLayout'
 import { InputBox } from './InputBox'
+import { useTitle } from "../../lib/title"
 
 export function Register() {
+  useTitle('Реєстрація')
   const [form, setForm] = useState({ email: '', username: '', password: '', password2: '' })
   const [localErrors, setLocalErrors] = useState<Record<string, string>>({})
   const navigate = useNavigate()

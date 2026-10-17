@@ -7,6 +7,8 @@ from asgiref.sync import async_to_sync
 from django.http import HttpResponse
 from .models import *
 from .forms import *
+from .services import get_favorites
+
 
 @login_required
 def chat_list(request):
@@ -172,20 +174,8 @@ def chatroom_leave_view(request, chatroom_name):
 
 @login_required
 def favorites_chat_view(request):
-    # Ищем, есть ли уже чат с самим собой
-    favorites_group_name = f"favorites_{request.user.username}"
-    chat_group, created = ChatGroup.objects.get_or_create(
-        group_name=favorites_group_name,
-        defaults={
-            'is_private': True,
-            'group_chat_name': f"Вибране ({request.user.username})"
-        }
-    )
-
-    if created:
-        chat_group.members.add(request.user)
-
-    return redirect('chatroom', chat_group.group_name)
+    chat, _ = get_favorites(request.user)
+    return redirect('chatroom', chat.group_name)
 
 
 @login_required

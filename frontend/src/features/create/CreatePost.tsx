@@ -7,6 +7,7 @@ import type { Publication } from '../../api/types'
 import { btnPrimaryLg, btnSoftLg, card } from '../ui/cls'
 import { MediaPicker } from './MediaPicker'
 import type { MediaDraft } from './media'
+import { useTitle } from "../../lib/title"
 
 const MAX_TEXT = 2000
 
@@ -26,6 +27,7 @@ function publishError(err: unknown): string {
 }
 
 export function CreatePost() {
+  useTitle('Нова публікація')
   const qc = useQueryClient()
   const [items, setItems] = useState<MediaDraft[]>([])
   const [text, setText] = useState('')

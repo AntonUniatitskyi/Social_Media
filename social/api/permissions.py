@@ -11,7 +11,12 @@ class IsOwnerOrReadOnly(permissions.BasePermission):
         return owner_user == request.user
 
 
+def is_site_admin(user):
+    return user.is_authenticated and (
+        user.is_superuser or user.groups.filter(name="Адміністратор").exists()
+    )
+
+
 class IsSiteAdmin(permissions.BasePermission):
     def has_permission(self, request, view):
-        u = request.user
-        return u.is_authenticated and (u.is_superuser or u.groups.filter(name="Адміністратор").exists())
+        return is_site_admin(request.user)

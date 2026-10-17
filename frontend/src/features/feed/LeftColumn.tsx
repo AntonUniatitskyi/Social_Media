@@ -25,9 +25,9 @@ export function InviteItem({ invite }: { invite: Invitation }) {
   return (
     <li className="rounded-xl border border-sand bg-white p-3">
       <div className="flex items-start gap-2.5">
-        <Avatar src={invite.from_user.avatar} name={invite.from_user.uusername} className="size-9" />
+        <Avatar src={invite.from_user.avatar} name={invite.from_user.username} className="size-9" />
         <p className="text-sm leading-snug">
-          <span className="font-semibold">{invite.from_user.uusername}</span> запрошує вас до чату «
+          <span className="font-semibold">{invite.from_user.username}</span> запрошує вас до чату «
           {invite.chat_title ?? 'без назви'}»
         </p>
       </div>

@@ -15,7 +15,7 @@ class UserMiniSerializer(serializers.ModelSerializer):
 
     class Meta:
         model = User
-        fields = ("id", "uusername", "avatar")
+        fields = ("id", "username", "uusername", "avatar")
 
 
 class TargetUserSerializer(serializers.Serializer):
@@ -80,7 +80,7 @@ class ChatSerializer(serializers.ModelSerializer):
         model = ChatGroup
         fields = (
             "group_name", "title", "is_private", "is_admin", "members",
-            "last_message_body", "last_message_at", "admin_id",
+            "last_message_body", "last_message_at", "admin_id", "is_favorites",
         )
 
     def get_title(self, obj):
@@ -88,7 +88,7 @@ class ChatSerializer(serializers.ModelSerializer):
             return obj.group_chat_name
         me = self.context["request"].user
         other = next((m for m in obj.members.all() if m.id != me.id), None)
-        return other.profile.uusername if other else "Чат"
+        return other.username if other else "Чат"
 
     def get_is_admin(self, obj):
         return obj.admin_id == self.context["request"].user.id
@@ -98,6 +98,11 @@ class ChatSerializer(serializers.ModelSerializer):
 
     def get_last_message_at(self, obj):
         return getattr(obj, "last_message_at", None)
+
+    def get_members(self, obj):
+        if obj.is_public:
+            return []
+        return UserMiniSerializer(obj.members.all(), many=True, context=self.context).data
 
 
 class GroupChatWriteSerializer(serializers.ModelSerializer):

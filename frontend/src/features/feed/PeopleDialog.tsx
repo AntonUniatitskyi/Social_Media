@@ -50,8 +50,11 @@ function PeopleList({ uusername, kind, onNavigate }: {
               onClick={onNavigate}
               className="flex items-center gap-3 rounded-lg p-1.5 hover:bg-sand/30"
             >
-              <Avatar src={p.avatar} name={p.uusername} className="size-10" />
-              <span className="truncate font-medium">{p.uusername}</span>
+              <Avatar src={p.avatar} name={p.username} className="size-10" />
+              <span className="min-w-0 leading-tight">
+                <span className="block truncate font-medium">{p.username}</span>
+                <span className="block truncate text-xs text-stone-600">@{p.uusername}</span>
+              </span>
             </Link>
           </li>
         ))}

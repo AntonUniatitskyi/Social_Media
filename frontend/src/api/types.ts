@@ -8,6 +8,7 @@ export interface Paginated<T> {
 export interface ProfileMini {
   id: number
   uusername: string
+  username: string;
   avatar: string | null
 }
 
@@ -17,6 +18,7 @@ export interface Profile extends ProfileMini {
   following_count: number
   publications_count: number
   is_following: boolean
+  is_site_admin: boolean
 }
 
 export interface MediaItem {
@@ -47,7 +49,7 @@ export interface Comment {
 
 export interface Invitation {
   id: number
-  from_user: { id: number; uusername: string; avatar: string | null }
+  from_user: { id: number;  username: string; uusername: string; avatar: string | null }
   group_name: string
   chat_title: string | null
   timestamp: string
@@ -68,17 +70,20 @@ export interface AppNotification {
   created_at: string
 }
 
-export interface ChatMember { id: number; uusername: string; avatar: string | null }   // id пользователя, не профиля
+export interface ChatMember { id: number; username: string; uusername: string; avatar: string | null }   // id пользователя, не профиля
 
 export interface Chat {
   group_name: string
   title: string
   is_private: boolean
+  is_public: boolean
   is_admin: boolean
   admin_id: number | null
+  unread: number
   members: ChatMember[]
   last_message_body: string | null
   last_message_at: string | null
+  is_favorites: boolean
 }
 
 export interface ChatMessage {

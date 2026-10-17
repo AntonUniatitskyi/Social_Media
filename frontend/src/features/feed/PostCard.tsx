@@ -83,15 +83,16 @@ export function PostCard({ post, onComplain, onDeleted }: {
     <article className={`${card} pb-3`}>
       <header className="flex items-center gap-3 px-4 pb-3 pt-3.5">
         <Link to={profileLink} aria-hidden tabIndex={-1} className="shrink-0">
-          <Avatar src={post.profile.avatar} name={post.profile.uusername} className="size-10" />
+          <Avatar src={post.profile.avatar} name={post.profile.username} className="size-10" />
         </Link>
         <div className="min-w-0 flex-1 leading-tight">
           <Link to={profileLink} className="block truncate font-semibold hover:underline">
-            {post.profile.uusername}
+            {post.profile.username}
           </Link>
-          <time dateTime={post.timestamp} title={fullDate(post.timestamp)} className="text-xs text-stone-500">
-            {timeAgo(post.timestamp)}
-          </time>
+          <p className="truncate text-xs text-stone-600">
+            @{post.profile.uusername} ·{' '}
+            <time dateTime={post.timestamp} title={fullDate(post.timestamp)}>{timeAgo(post.timestamp)}</time>
+          </p>
         </div>
         {isMine ? (
           <button type="button" onClick={() => setConfirmDelete(true)} aria-label="Видалити публікацію" className={iconBtn}>

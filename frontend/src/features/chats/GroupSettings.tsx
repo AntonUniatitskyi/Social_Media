@@ -88,9 +88,9 @@ function Body({ chat, myNick, onClose }: { chat: Chat; myNick?: string; onClose:
             const isGroupAdmin = m.id === chat.admin_id
             return (
               <li key={m.id} className="flex items-center gap-3 rounded-lg p-1.5">
-                <Avatar src={m.avatar} name={m.uusername} className="size-9" />
+                <Avatar src={m.avatar} name={m.username} className="size-9" />
                 <Link to={m.uusername === myNick ? '/me' : `/u/${m.uusername}`} onClick={onClose} className={`min-w-0 flex-1 truncate font-medium hover:underline ${focusRing}`}>
-                  {m.uusername}
+                  {m.username}
                 </Link>
                 {isGroupAdmin && <span className="text-xs text-stone-600">адміністратор</span>}
                 {chat.is_admin && !isGroupAdmin && (
@@ -98,7 +98,7 @@ function Body({ chat, myNick, onClose }: { chat: Chat; myNick?: string; onClose:
                     type="button"
                     onClick={() => kick.mutate(m.id)}
                     disabled={kick.isPending}
-                    aria-label={`Видалити ${m.uusername} з групи`}
+                    aria-label={`Видалити ${m.username} з групи`}
                     className={`${iconBtn} size-8`}
                   >
                     <X className="size-4" />

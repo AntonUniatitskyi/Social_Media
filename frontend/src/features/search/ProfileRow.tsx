@@ -9,6 +9,7 @@ import { btnDark, btnSoft } from '../ui/cls'
 export interface RowProfile {
   id: number
   uusername: string
+  username: string
   avatar: string | null
   bio?: string | null
   is_following?: boolean
@@ -39,11 +40,11 @@ export function ProfileRow({ p }: { p: RowProfile }) {
   return (
     <li className="flex items-center gap-3 p-3">
       <Link to={link} aria-hidden tabIndex={-1} className="shrink-0">
-        <Avatar src={p.avatar} name={p.uusername} className="size-12" />
+        <Avatar src={p.avatar} name={p.username} className="size-12" />
       </Link>
       <div className="min-w-0 flex-1 leading-tight">
-        <Link to={link} className="block truncate font-semibold hover:underline">{p.uusername}</Link>
-        {p.bio && <p className="mt-0.5 truncate text-sm text-stone-600">{p.bio}</p>}
+        <Link to={link} className="block truncate font-semibold hover:underline">{p.username}</Link>
+        <p className="mt-0.5 truncate text-sm text-stone-600">@{p.uusername}</p>
       </div>
       {isMe ? (
         <span className="text-sm text-stone-500">Це ви</span>

@@ -1,7 +1,7 @@
 import { useMemo, useState, type RefObject } from 'react'
 import { Link } from 'react-router-dom'
 import { useInfiniteQuery } from '@tanstack/react-query'
-import { ArrowDown, FileText } from 'lucide-react'
+import { ArrowDown, FileText, Trash2 } from 'lucide-react'
 import { api } from '../../api/client'
 import type { ChatMessage, CursorPage } from '../../api/types'
 import { clock, dayLabel } from '../../lib/time'
@@ -11,16 +11,31 @@ import { btnSoft, focusRing } from '../ui/cls'
 
 const sameDay = (a: string, b: string) => new Date(a).toDateString() === new Date(b).toDateString()
 
-function Bubble({ m, mine, showName }: { m: ChatMessage; mine: boolean; showName: boolean }) {
+function Bubble({ m, mine, showName, onDelete }: { m: ChatMessage; mine: boolean; showName: boolean; onDelete?: (m: ChatMessage) => void }) {
   return (
     <div
-      className={`max-w-[80%] rounded-2xl px-3 py-2 ${
+      className={`group/bubble relative max-w-[80%] rounded-2xl px-3 py-2 ${
         mine ? 'rounded-br-md bg-bark text-cream' : 'rounded-bl-md border border-sand bg-white'
       }`}
     >
+      {onDelete && (
+        <button
+          type="button"
+          onClick={() => onDelete(m)}
+          aria-label="Видалити повідомлення"
+          className={`absolute -top-2 ${mine ? '-left-2' : '-right-2'} grid size-6 place-items-center rounded-full border border-sand bg-cream text-stone-600 shadow transition-opacity hover:text-red-700 sm:opacity-0 sm:group-hover/bubble:opacity-100 focus-visible:opacity-100 ${focusRing}`}
+        >
+          <Trash2 className="size-3.5" />
+        </button>
+      )}
+
       {showName && (
-        <Link to={`/u/${m.author.uusername}`} className="mb-0.5 block text-xs font-semibold text-clay hover:underline">
-          {m.author.uusername}
+        <Link
+          to={`/u/${m.author.uusername}`}
+          title={`@${m.author.uusername}`}
+          className="mb-0.5 block text-xs font-semibold text-clay hover:underline"
+        >
+          {m.author.username}
         </Link>
       )}
 
@@ -50,11 +65,12 @@ function Bubble({ m, mine, showName }: { m: ChatMessage; mine: boolean; showName
   )
 }
 
-export function MessageList({ groupName, group, myNick, scrollerRef }: {
+export function MessageList({ groupName, group, myNick, scrollerRef, onDelete }: {
   groupName: string
   group: boolean
   myNick?: string
   scrollerRef: RefObject<HTMLUListElement | null>
+  onDelete?: (m: ChatMessage) => void
 }) {
   const [showJump, setShowJump] = useState(false)
 
@@ -95,11 +111,11 @@ export function MessageList({ groupName, group, myNick, scrollerRef }: {
               <div className={`flex items-end gap-2 ${mine ? 'justify-end' : 'justify-start'}`}>
                 {group && !mine &&
                   (startsRun ? (
-                    <Avatar src={m.author.avatar} name={m.author.uusername} className="size-8" />
+                    <Avatar src={m.author.avatar} name={m.author.username} className="size-8" />
                   ) : (
                     <span aria-hidden className="size-8 shrink-0" />
                   ))}
-                <Bubble m={m} mine={mine} showName={group && !mine && startsRun} />
+                <Bubble m={m} mine={mine} showName={group && !mine && startsRun} onDelete={onDelete} />
               </div>
             </li>
           )

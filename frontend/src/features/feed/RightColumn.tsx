@@ -32,9 +32,10 @@ function Suggested({ p }: { p: ProfileMini }) {
   })
   return (
     <li className="flex items-center gap-3">
-      <Avatar src={p.avatar} name={p.uusername} className="size-10" />
-      <Link to={`/u/${p.uusername}`} className="min-w-0 flex-1 truncate text-sm font-medium hover:underline">
-        {p.uusername}
+      <Avatar src={p.avatar} name={p.username} className="size-10" />
+      <Link to={`/u/${p.uusername}`} className="min-w-0 flex-1 leading-tight hover:underline">
+        <span className="block truncate text-sm font-medium">{p.username}</span>
+        <span className="block truncate text-xs text-stone-600">@{p.uusername}</span>
       </Link>
       <button
         type="button"
@@ -63,10 +64,11 @@ export function RightColumn() {
     <aside className="sticky top-24 space-y-4">
       <section className={`${card} p-4`} aria-label="Мій профіль">
         <div className="flex items-center gap-3">
-          <Avatar src={me.avatar} name={me.uusername} className="size-14" />
+          <Avatar src={me.avatar} name={me.username} className="size-14" />
           <div className="min-w-0">
-            <Link to="/me" className="block truncate font-semibold hover:underline">{me.uusername}</Link>
-            {me.bio && <p className="line-clamp-2 text-sm text-stone-600">{me.bio}</p>}
+              <Link to="/me" className="block truncate font-semibold hover:underline">{me.username}</Link>
+              <p className="truncate text-sm text-stone-600">@{me.uusername}</p>
+              {me.bio && <p className="mt-0.5 line-clamp-2 text-sm text-stone-600">{me.bio}</p>}
           </div>
         </div>
         <div className="mt-4 grid grid-cols-3 text-center">

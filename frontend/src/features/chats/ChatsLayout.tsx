@@ -2,6 +2,7 @@ import { Outlet, useMatch } from 'react-router-dom'
 import { MessageCircle } from 'lucide-react'
 import { card } from '../ui/cls'
 import { ChatList } from './ChatList'
+import { useTitle } from "../../lib/title"
 
 export function ChatsLayout() {
   const open = !!useMatch('/chats/:groupName')
@@ -20,6 +21,7 @@ export function ChatsLayout() {
 }
 
 export function ChatPlaceholder() {
+  useTitle('Чати')
   return (
     <div className="grid flex-1 place-items-center p-8 text-center">
       <div>

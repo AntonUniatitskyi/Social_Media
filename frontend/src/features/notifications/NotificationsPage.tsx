@@ -9,6 +9,7 @@ import { useSentinel } from '../../lib/useSentinel'
 import { InviteItem } from '../feed/LeftColumn'
 import { Avatar } from '../ui/Avatar'
 import { btnDark, btnSoft, card } from '../ui/cls'
+import { useTitle } from "../../lib/title"
 
 const TEXT: Partial<Record<AppNotification['kind'], string>> = {
   follow: 'підписався(лась) на вас',
@@ -71,6 +72,7 @@ function RowSkeleton() {
 }
 
 export function NotificationsPage() {
+  useTitle('Сповіщення')
   const qc = useQueryClient()
 
   const list = useInfiniteQuery({

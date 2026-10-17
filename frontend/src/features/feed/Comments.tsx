@@ -66,11 +66,11 @@ export function Comments({ publicationId, onCountChange }: {
         <ul className="max-h-64 space-y-3 overflow-y-auto pr-1">
           {comments.map((c) => (
             <li key={c.id} className="flex gap-2.5">
-              <Avatar src={c.author.avatar} name={c.author.uusername} className="size-8" />
+              <Avatar src={c.author.avatar} name={c.author.username} className="size-8" />
               <div className="min-w-0 flex-1">
                 <p className="text-sm leading-snug">
-                  <Link to={`/u/${c.author.uusername}`} className="font-semibold hover:underline">
-                    {c.author.uusername}
+                  <Link to={`/u/${c.author.uusername}`} title={`@${c.author.uusername}`} className="font-semibold hover:underline">
+                    {c.author.username}
                   </Link>{' '}
                   <span className="whitespace-pre-line break-words">{c.text_com}</span>
                 </p>

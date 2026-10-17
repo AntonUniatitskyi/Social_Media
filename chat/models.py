@@ -12,6 +12,8 @@ class ChatGroup(models.Model):
     users_online = models.ManyToManyField(User, related_name='online_in_groups', blank=True)
     members = models.ManyToManyField(User, related_name='chat_groups', blank=True)
     is_private = models.BooleanField(default=False)
+    is_public = models.BooleanField(default=False)
+    is_favorites = models.BooleanField(default=False)
 
     def __str__(self):
         return f'{self.group_name}'
@@ -61,3 +63,13 @@ class ChatInvitation(models.Model):
 
     class Meta:
         unique_together = ('to_user', 'chat_group')
+
+
+class ChatRead(models.Model):
+    """До какого сообщения участник дочитал чат."""
+    chat = models.ForeignKey(ChatGroup, related_name="reads", on_delete=models.CASCADE)
+    user = models.ForeignKey(User, related_name="chat_reads", on_delete=models.CASCADE)
+    last_read_id = models.BigIntegerField(default=0)
+
+    class Meta:
+        constraints = [models.UniqueConstraint(fields=["chat", "user"], name="uniq_chat_read")]

@@ -77,7 +77,6 @@ export function ChatList() {
     queryFn: ({ pageParam }) => api<Paginated<Chat>>(`/chats/?page=${pageParam}`),
     initialPageParam: 1,
     getNextPageParam: (last, all) => (last.next ? all.length + 1 : undefined),
-    refetchInterval: 20_000,         // список не «живой»: обновляем раз в 20 секунд
   })
   const list = chats.data?.pages.flatMap((p) => p.results) ?? []
 
@@ -150,14 +149,24 @@ export function ChatList() {
                   <ChatAvatar chat={c} myNick={me?.uusername} />
                   <div className="min-w-0 flex-1">
                     <div className="flex items-baseline justify-between gap-2">
-                      <span className="truncate font-semibold">{c.title}</span>
+                      <span className={`truncate ${c.unread > 0 ? 'font-bold' : 'font-semibold'}`}>{c.title}</span>
                       {c.last_message_at && (
-                        <span className="shrink-0 text-xs text-stone-500">{timeAgo(c.last_message_at)}</span>
+                        <span className={`shrink-0 text-xs ${c.unread > 0 ? 'font-medium text-clay' : 'text-stone-500'}`}>
+                          {timeAgo(c.last_message_at)}
+                        </span>
                       )}
                     </div>
-                    <p className="truncate text-sm text-stone-600">
-                      {c.last_message_body ?? (c.last_message_at ? 'Вкладення' : 'Повідомлень ще немає')}
-                    </p>
+                    <div className="flex items-center justify-between gap-2">
+                      <p className={`truncate text-sm ${c.unread > 0 ? 'text-bark' : 'text-stone-600'}`}>
+                        {c.last_message_body ?? (c.last_message_at ? 'Вкладення' : 'Повідомлень ще немає')}
+                      </p>
+                      {c.unread > 0 && (
+                        <span className="grid min-w-5 shrink-0 place-items-center rounded-full bg-clay px-1.5 text-xs font-medium leading-5 text-cream">
+                          <span aria-hidden>{c.unread > 99 ? '99+' : c.unread}</span>
+                          <span className="sr-only">Непрочитаних: {c.unread}</span>
+                        </span>
+                      )}
+                    </div>
                   </div>
                 </NavLink>
               </li>

@@ -9,6 +9,8 @@ import { ComplaintDialog } from './ComplaintDialog'
 import { LeftColumn } from './LeftColumn'
 import { PostCard } from './PostCard'
 import { RightColumn } from './RightColumn'
+import { useTitle } from "../../lib/title"
+
 
 function PostSkeleton() {
   return (
@@ -24,6 +26,7 @@ function PostSkeleton() {
 }
 
 export function Feed() {
+  useTitle('Стрічка')
   // один seed на сессию ленты: иначе «случайный» порядок меняется между страницами
   const [seed] = useState(() => Math.floor(Math.random() * 1_000_000) + 1)
   const [complaintId, setComplaintId] = useState<number | null>(null)

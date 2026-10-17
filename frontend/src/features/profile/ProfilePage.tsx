@@ -10,6 +10,7 @@ import { Avatar } from '../ui/Avatar'
 import { btnDark, btnSoft, card, focusRing, iconBtn } from '../ui/cls'
 import { EditProfileDialog } from './EditProfileDialog'
 import { PostGrid } from './PostGrid'
+import { useTitle } from "../../lib/title"
 
 const btnIcon = `${btnSoft} inline-flex items-center gap-1.5`
 
@@ -136,6 +137,12 @@ export function ProfilePage({ uusername, isMine = false }: { uusername: string; 
     retry: (count, err) => !(err instanceof ApiError && err.status === 404) && count < 2,
   })
 
+  useTitle(
+    profile.data ? `${profile.data.username} (@${profile.data.uusername})`
+    : profile.isError ? 'Користувача не знайдено'
+    : undefined,
+  )
+
   if (profile.isPending) return <ProfileSkeleton />
 
   if (profile.isError) {
@@ -159,11 +166,14 @@ export function ProfilePage({ uusername, isMine = false }: { uusername: string; 
     <main className="mx-auto w-full max-w-[720px] space-y-6 px-3">
       <section className={`${card} p-5 sm:p-7`} aria-label="Профіль">
         <div className="flex flex-col items-center gap-5 text-center sm:flex-row sm:items-start sm:gap-8 sm:text-left">
-          <Avatar src={p.avatar} name={p.uusername} className="size-24 shadow-sm ring-4 ring-cream sm:size-32" />
+          <Avatar src={p.avatar} name={p.username} className="size-24 shadow-sm ring-4 ring-cream sm:size-32" />
 
           <div className="min-w-0 flex-1 space-y-4">
             <div className="flex flex-col items-center gap-3 sm:flex-row">
-              <h1 className="max-w-full truncate text-xl font-semibold">{p.uusername}</h1>
+              <div className="min-w-0 max-w-full">
+                <h1 className="truncate text-xl font-semibold">{p.username}</h1>
+                <p className="truncate text-sm text-stone-600">@{p.uusername}</p>
+              </div>
               <div className="flex items-center gap-2 sm:ml-auto">
                 {isMine ? (
                   <>

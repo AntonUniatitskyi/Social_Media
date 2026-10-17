@@ -1,12 +1,13 @@
 from django.contrib.auth.models import User, Group
 from django.contrib.auth.password_validation import validate_password
+from django.contrib.auth.validators import UnicodeUsernameValidator
 from rest_framework import serializers
 from rest_framework.exceptions import ValidationError
 
 from social.models import Publication, Comment, Profile, MediaItem, Notification, Complaint
 
 from social.services import attach_media
-
+from .permissions import is_site_admin
 import os
 import re
 from django.db import transaction
@@ -15,29 +16,40 @@ from PIL import UnidentifiedImageError
 ALLOWED_MEDIA_EXT = {".jpg", ".jpeg", ".png", ".gif", ".webp", ".mp4", ".mov"}
 MAX_MEDIA_SIZE = 50 * 1024 * 1024
 
-UUSERNAME_RE = re.compile(r"[A-Za-z0-9._]{3,30}")
+UUSERNAME_RE = re.compile(r"[a-z0-9._]{3,30}")
 MAX_AVATAR_SIZE = 5 * 1024 * 1024
 
 class ProfileMiniSerializer(serializers.ModelSerializer):
+    username = serializers.CharField(source="user.username", read_only=True)
     class Meta:
         model = Profile
-        fields = ('id', 'uusername', 'avatar')
+        fields = ('id', 'uusername', 'username', 'avatar')
 
 
 class ProfileSerializer(serializers.ModelSerializer):
+    username = serializers.CharField(
+        source="user.username", min_length=3, max_length=30,
+        validators=[UnicodeUsernameValidator()],
+    )
     followers_count = serializers.IntegerField(read_only=True)
     following_count = serializers.IntegerField(read_only=True)
     publications_count = serializers.IntegerField(read_only=True)
     is_following = serializers.SerializerMethodField()
+    is_site_admin = serializers.SerializerMethodField()
     class Meta:
         model = Profile
         fields = (
-            'id', 'uusername', 'bio', 'avatar',
+            'id', 'uusername', 'username', 'bio', 'avatar',
             'followers_count', 'following_count', 'publications_count',
-            'is_following'
+            'is_following', 'is_site_admin'
         )
         read_only_fields = ('id',)
         extra_kwargs = {"bio": {"max_length": 300}}
+
+    def get_is_site_admin(self, obj):
+        request = self.context.get('request')
+        return bool(request and obj.user_id == request.user.id and is_site_admin(request.user))
+
 
     def get_is_following(self, obj):
         request = self.context.get('request')
@@ -61,6 +73,14 @@ class ProfileSerializer(serializers.ModelSerializer):
         if f and f.size > MAX_AVATAR_SIZE:
             raise serializers.ValidationError("Аватар завеликий: максимум 5 МБ.")
         return f
+
+    @transaction.atomic
+    def update(self, instance, validated_data):
+        user_data = validated_data.pop("user", {})
+        if "username" in user_data:
+            instance.user.username = user_data["username"]
+            instance.user.save(update_fields=["username"])
+        return super().update(instance, validated_data)
 
 
 class MediaItemSerializer(serializers.ModelSerializer):
@@ -229,4 +249,4 @@ class ProfileCardSerializer(serializers.ModelSerializer):
 
     class Meta:
         model = Profile
-        fields = ('id', 'uusername', 'avatar', 'bio', 'is_following')
+        fields = ('id', 'uusername', 'username', 'avatar', 'bio', 'is_following')

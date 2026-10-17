@@ -8,6 +8,7 @@ import { useDebounced } from '../../lib/useDebounced'
 import { useSentinel } from '../../lib/useSentinel'
 import { btnSoft, card, iconBtn } from '../ui/cls'
 import { ProfileRow } from './ProfileRow'
+import { useTitle } from "../../lib/title"
 
 const MIN_CHARS = 2
 
@@ -39,6 +40,7 @@ export function SearchPage() {
   const [params, setParams] = useSearchParams()
   const [text, setText] = useState(params.get('q') ?? '')
   const q = useDebounced(text.trim(), 300)
+  useTitle(q ? Пошук: ${q} : 'Пошук')
   const searching = q.length >= MIN_CHARS
 
   // запрос живёт в адресе: кнопка «Назад» возвращает к результатам

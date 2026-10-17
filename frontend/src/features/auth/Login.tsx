@@ -6,8 +6,10 @@ import { ApiError } from '../../api/client'
 import { login } from './auth'
 import { AuthLayout, linkCls, submitBtn } from './AuthLayout'
 import { InputBox } from './InputBox'
+import { useTitle } from "../../lib/title"
 
 export function Login() {
+  useTitle('Вхід')
   const [username, setUsername] = useState('')
   const [password, setPassword] = useState('')
   const navigate = useNavigate()

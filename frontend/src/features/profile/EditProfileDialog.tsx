@@ -10,7 +10,8 @@ import { Dialog } from '../ui/Dialog'
 
 const MAX_BIO = 300
 const MAX_AVATAR = 5 * 1024 * 1024
-const NICK_RE = /^[A-Za-z0-9._]{3,30}$/
+const HANDLE_RE = /^[a-z0-9._]{3,30}$/
+const NAME_RE = /^[\p{L}\p{N}_.@+-]{3,30}$/u
 
 const input =
   'w-full rounded-xl border bg-white/70 px-3.5 py-2.5 outline-none transition focus:border-clay focus:ring-[3px] focus:ring-clay/20'
@@ -28,6 +29,26 @@ export function EditProfileDialog({ profile, open, onClose, queryKey }: {
   )
 }
 
+function Field({ id, label, hint, error, children }: {
+  id: string
+  label: string
+  hint: string
+  error?: string | null
+  children: React.ReactNode
+}) {
+  return (
+    <div>
+      <label htmlFor={id} className="mb-1.5 block text-sm font-medium">{label}</label>
+      {children}
+      {error ? (
+        <p role="alert" className="mt-1.5 text-sm text-red-800">{error}</p>
+      ) : (
+        <p className="mt-1.5 text-xs text-stone-600">{hint}</p>
+      )}
+    </div>
+  )
+}
+
 function EditForm({ profile, onClose, queryKey }: {
   profile: Profile
   onClose: () => void
@@ -35,7 +56,8 @@ function EditForm({ profile, onClose, queryKey }: {
 }) {
   const qc = useQueryClient()
   const fileRef = useRef<HTMLInputElement>(null)
-  const [nick, setNick] = useState(profile.uusername)
+  const [name, setName] = useState(profile.username)
+  const [handle, setHandle] = useState(profile.uusername)
   const [bio, setBio] = useState(profile.bio ?? '')
   const [avatar, setAvatar] = useState<File | null>(null)
   const [fileError, setFileError] = useState<string | null>(null)
@@ -43,23 +65,27 @@ function EditForm({ profile, onClose, queryKey }: {
   const preview = useMemo(() => (avatar ? URL.createObjectURL(avatar) : null), [avatar])
   useEffect(() => () => { if (preview) URL.revokeObjectURL(preview) }, [preview])
 
-  const cleanNick = nick.trim()
-  const nickChanged = cleanNick !== profile.uusername
-  const nickInvalid = nickChanged && !NICK_RE.test(cleanNick)
-  const dirty = nickChanged || bio !== (profile.bio ?? '') || avatar !== null
+  const cleanName = name.trim()
+  const cleanHandle = handle.trim()
+  const nameChanged = cleanName !== profile.username
+  const handleChanged = cleanHandle !== profile.uusername
+  const bioChanged = bio !== (profile.bio ?? '')
+  const nameInvalid = nameChanged && !NAME_RE.test(cleanName)
+  const handleInvalid = handleChanged && !HANDLE_RE.test(cleanHandle)
+  const dirty = nameChanged || handleChanged || bioChanged || avatar !== null
 
   const m = useMutation({
     mutationFn: () => {
-      const fd = new FormData()                       // PATCH: отправляем только изменённое
-      if (nickChanged) fd.append('uusername', cleanNick)
-      if (bio !== (profile.bio ?? '')) fd.append('bio', bio)
+      const fd = new FormData()                              // PATCH: только изменённое
+      if (nameChanged) fd.append('username', cleanName)
+      if (handleChanged) fd.append('uusername', cleanHandle)
+      if (bioChanged) fd.append('bio', bio)
       if (avatar) fd.append('avatar', avatar)
       return api<Profile>(`/profiles/${encodeURIComponent(profile.uusername)}/`, { method: 'PATCH', body: fd })
     },
     onSuccess: (saved) => {
       qc.setQueryData(queryKey, saved)
-      qc.invalidateQueries({ queryKey: ['me'] })      // шапка, правая колонка
-      qc.invalidateQueries({ queryKey: ['grid'] })
+      qc.invalidateQueries()          // имя и нік попадают в посты, чаты, комментарии, ссылки: обновляем всё
       onClose()
     },
   })
@@ -74,11 +100,12 @@ function EditForm({ profile, onClose, queryKey }: {
 
   const errs = fieldErrors(m.error)
   const general = m.isError && Object.keys(errs).length === 0 ? 'Не вдалося зберегти. Спробуйте ще раз.' : null
-  const nickMessage = nickInvalid ? '3–30 символів: літери, цифри, крапка та підкреслення.' : errs.uusername
+  const nameError = nameInvalid ? '3–30 символів: літери, цифри та . _ @ + -' : (errs.username ?? null)
+  const handleError = handleInvalid ? '3–30 символів: малі латинські літери, цифри, крапка та підкреслення.' : (errs.uusername ?? null)
 
   return (
     <form
-      onSubmit={(e) => { e.preventDefault(); if (dirty && !nickInvalid && !m.isPending) m.mutate() }}
+      onSubmit={(e) => { e.preventDefault(); if (dirty && !nameInvalid && !handleInvalid && !m.isPending) m.mutate() }}
       className="space-y-5"
     >
       <div className="flex items-center gap-4">
@@ -88,7 +115,7 @@ function EditForm({ profile, onClose, queryKey }: {
           aria-label="Змінити фото профілю"
           className={`group relative rounded-full ${focusRing}`}
         >
-          <Avatar src={preview ?? profile.avatar} name={profile.uusername} className="size-20" />
+          <Avatar src={preview ?? profile.avatar} name={profile.username} className="size-20" />
           <span className="absolute inset-0 grid place-items-center rounded-full bg-bark/45 text-cream opacity-0 transition-opacity group-hover:opacity-100 group-focus-visible:opacity-100">
             <Camera className="size-6" />
           </span>
@@ -111,18 +138,29 @@ function EditForm({ profile, onClose, queryKey }: {
       </div>
       {(fileError || errs.avatar) && <p role="alert" className="-mt-2 text-sm text-red-800">{fileError ?? errs.avatar}</p>}
 
-      <div>
-        <label htmlFor="nick" className="mb-1.5 block text-sm font-medium">Нік</label>
+      <Field id="name" label="Ім’я" error={nameError} hint="Так вас бачать у публікаціях і чатах. Це також ваш логін для входу.">
         <input
-          id="nick"
-          value={nick}
-          onChange={(e) => setNick(e.target.value)}
+          id="name"
+          value={name}
+          onChange={(e) => setName(e.target.value)}
           autoComplete="off"
-          aria-invalid={!!nickMessage}
-          className={`${input} ${nickMessage ? 'border-red-400' : 'border-sand'}`}
+          aria-invalid={!!nameError}
+          className={`${input} ${nameError ? 'border-red-400' : 'border-sand'}`}
         />
-        {nickMessage && <p role="alert" className="mt-1.5 text-sm text-red-800">{nickMessage}</p>}
-      </div>
+      </Field>
+
+      <Field id="handle" label="Нік" error={handleError} hint={`Ваша адреса в профілі: /u/${cleanHandle || '…'}`}>
+        <input
+          id="handle"
+          value={handle}
+          onChange={(e) => setHandle(e.target.value.toLowerCase())}
+          autoComplete="off"
+          autoCapitalize="none"
+          spellCheck={false}
+          aria-invalid={!!handleError}
+          className={`${input} ${handleError ? 'border-red-400' : 'border-sand'}`}
+        />
+      </Field>
 
       <div>
         <label htmlFor="bio" className="mb-1.5 block text-sm font-medium">Про себе</label>
@@ -142,7 +180,7 @@ function EditForm({ profile, onClose, queryKey }: {
 
       <div className="flex justify-end gap-2">
         <button type="button" onClick={onClose} className={btnSoft}>Скасувати</button>
-        <button type="submit" disabled={!dirty || nickInvalid || m.isPending} className={btnDark}>
+        <button type="submit" disabled={!dirty || nameInvalid || handleInvalid || m.isPending} className={btnDark}>
           {m.isPending ? 'Зберігаємо…' : 'Зберегти'}
         </button>
       </div>

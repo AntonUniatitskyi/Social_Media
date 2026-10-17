@@ -38,7 +38,7 @@ class ProfileViewSet(
     lookup_field = "uusername"
     lookup_value_regex = r"[^/]+"
     filter_backends = [filters.SearchFilter]
-    search_fields = ["uusername"]
+    search_fields = ["uusername", "user__username"]
 
     def get_permissions(self):
         if self.action in ("list", "followers", "following"):
@@ -87,17 +87,18 @@ class ProfileViewSet(
     @action(detail=True, methods=["get"])
     def followers(self, request, uusername=None):
         profile = self.get_object()
-        return self._page(Profile.objects.filter(user__following_profiles=profile).order_by("uusername"))
+        return self._page(Profile.objects.filter(user__following_profiles=profile)
+                          .select_related("user").order_by("uusername"))
 
     @action(detail=True, methods=["get"])
     def following(self, request, uusername=None):
         profile = self.get_object()
-        return self._page(profile.user.following_profiles.order_by("uusername"))
+        return self._page(profile.user.following_profiles.select_related("user").order_by("uusername"))
 
     @action(detail=False, methods=["get"], permission_classes=[permissions.IsAuthenticated])
     def recommended(self, request):
         qs = (Profile.objects.exclude(user=request.user)
-              .exclude(followers=request.user).order_by("?")[:5])
+              .exclude(followers=request.user).select_related("user").order_by("?")[:5])
         return Response(ProfileMiniSerializer(qs, many=True, context=self.get_serializer_context()).data)
 
 class PublicationViewSet(viewsets.ModelViewSet):
@@ -106,7 +107,7 @@ class PublicationViewSet(viewsets.ModelViewSet):
     def get_queryset(self):
         qs = (
             Publication.objects
-            .select_related("profile")
+            .select_related("profile__user")
             .prefetch_related("media_items")
             .annotate(
                 likes_total=Count("likes", distinct=True),

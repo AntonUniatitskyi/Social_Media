@@ -7,6 +7,7 @@ import type { Publication } from '../../api/types'
 import { ComplaintDialog } from '../feed/ComplaintDialog'
 import { PostCard } from '../feed/PostCard'
 import { btnDark, btnSoft, card } from '../ui/cls'
+import { useTitle } from "../../lib/title"
 
 export function PostPage() {
   const { id = '' } = useParams()
@@ -18,6 +19,7 @@ export function PostPage() {
     queryFn: () => api<Publication>(`/publications/${encodeURIComponent(id)}/`),
     retry: (count, err) => !(err instanceof ApiError && err.status === 404) && count < 2,
   })
+  useTitle(q.data ? `Публікація від ${q.data.profile.username}` : undefined)
 
   const back = () => (window.history.length > 1 ? navigate(-1) : navigate('/'))
 

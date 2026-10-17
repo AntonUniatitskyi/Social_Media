@@ -13,4 +13,9 @@ urlpatterns = [
         MessageViewSet.as_view({"get": "list", "post": "create"}),
         name="chat-messages",
     ),
+    path(
+        "chats/<str:group_name>/messages/<int:pk>/",
+        MessageViewSet.as_view({"delete": "destroy"}),
+        name="chat-message",
+    ),
 ] + router.urls
