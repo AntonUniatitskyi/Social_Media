@@ -17,6 +17,8 @@ import { NotificationsPage } from './features/notifications/NotificationsPage.ts
 import { ChatsLayout } from './features/chats/ChatsLayout.tsx'
 import { ChatPlaceholder } from './features/chats/ChatsLayout.tsx'
 import { ChatRoomRoute } from './features/chats/ChatRoom.tsx'
+import { ModerationPage } from "./features/moderation/ModerationPage.tsx"
+import { RequireAdmin } from "./features/moderation/RequireAdmin.tsx"
 
 const queryClient = new QueryClient()
 
@@ -40,6 +42,10 @@ createRoot(document.getElementById('root')!).render(
               <Route path="/chats" element={<ChatsLayout />}>
                 <Route index element={<ChatPlaceholder />} />
                 <Route path=":groupName" element={<ChatRoomRoute />} />
+              </Route>
+
+              <Route path="/moderation" element={<RequireAdmin />}>
+                <Route index element={<ModerationPage />} />
               </Route>
             </Route>
           </Route>

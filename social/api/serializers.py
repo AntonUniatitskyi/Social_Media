@@ -207,6 +207,27 @@ class ComplaintSerializer(serializers.ModelSerializer):
         read_only_fields = fields
 
 
+class ReportSerializer(serializers.ModelSerializer):
+    user = ProfileMiniSerializer(source="user.profile", read_only=True)
+
+    class Meta:
+        model = Complaint
+        fields = ("id", "user", "reason", "text", "created_at")
+        read_only_fields = fields
+
+
+class ReportedPublicationSerializer(serializers.ModelSerializer):
+    profile = ProfileMiniSerializer(read_only=True)
+    media_items = MediaItemSerializer(many=True, read_only=True)
+    reports = serializers.IntegerField(read_only=True)
+    complaints = ReportSerializer(source="pending_reports", many=True, read_only=True)
+
+    class Meta:
+        model = Publication
+        fields = ("id", "profile", "text", "timestamp", "media_items", "reports", "complaints")
+        read_only_fields = fields
+
+
 class RegisterSerializer(serializers.ModelSerializer):
     password = serializers.CharField(
         write_only=True,

@@ -1,5 +1,5 @@
 from django.db import transaction
-from django.db.models import Count, Exists, OuterRef, Case, F, IntegerField, Value, When
+from django.db.models import Count, Exists, OuterRef, Case, F, IntegerField, Value, When, Min, Prefetch, Q
 from rest_framework import viewsets, permissions, mixins, status, generics, filters
 from rest_framework.decorators import action
 from rest_framework.response import Response
@@ -21,6 +21,7 @@ from .serializers import (
     PublicationSerializer,
     PublicationWriteSerializer,
     RegisterSerializer,
+    ReportedPublicationSerializer,
 )
 from .permissions import IsOwnerOrReadOnly, IsSiteAdmin
 
@@ -180,14 +181,14 @@ class PublicationViewSet(viewsets.ModelViewSet):
                 rand_key=Mod(F("id") * seed, 1000003),
             )
             .order_by(
-                "-is_followed",                                  # сначала подписки
-                Case(                                            # у подписок ключ один, решает дата
+                "-is_followed",
+                Case(
                     When(is_followed=True, then=Value(0)),
-                    default=F("rand_key"),                       # у остальных решает seed
+                    default=F("rand_key"),
                     output_field=IntegerField(),
                 ),
                 "-timestamp",
-                "-id",                                           # стабильная пагинация при равных ключах
+                "-id",
             )
         )
         page = self.paginate_queryset(qs)
@@ -325,6 +326,49 @@ class ComplaintViewSet(
         complaint.reject_complaint()
         return Response({"detail": "Скаргу відхилено.", "accepted": False})
 
+
+class ModerationViewSet(mixins.ListModelMixin, viewsets.GenericViewSet):
+    permission_classes = [IsSiteAdmin]
+    serializer_class = ReportedPublicationSerializer
+
+    def get_queryset(self):
+        pending = (
+            Complaint.objects.filter(accepted=None)
+            .select_related("user__profile").order_by("created_at")
+        )
+        return (
+            Publication.objects
+            .annotate(
+                reports=Count("complaint", filter=Q(complaint__accepted__isnull=True)),
+                first_report=Min("complaint__created_at", filter=Q(complaint__accepted__isnull=True)),
+            )
+            .filter(reports__gt=0)
+            .select_related("profile__user")
+            .prefetch_related(
+                "media_items",
+                Prefetch("complaint_set", queryset=pending, to_attr="pending_reports"),
+            )
+            .order_by("-reports", "first_report", "id")
+        )
+
+    @action(detail=False, methods=["get"], url_path="count")
+    def pending_count(self, request):
+        return Response({"pending": self.get_queryset().count()})
+
+    @action(detail=True, methods=["post"])
+    def remove(self, request, pk=None):
+        publication = self.get_object()
+        files = [m.file for m in publication.media_items.all() if m.file]
+        with transaction.atomic():
+            publication.delete()
+            transaction.on_commit(lambda: [f.delete(save=False) for f in files])
+        return Response(status=status.HTTP_204_NO_CONTENT)
+
+    @action(detail=True, methods=["post"])
+    def dismiss(self, request, pk=None):
+        publication = self.get_object()
+        n = Complaint.objects.filter(publication=publication, accepted=None).update(accepted=False)
+        return Response({"dismissed": n})
 
 class RegisterView(generics.CreateAPIView):
     serializer_class = RegisterSerializer

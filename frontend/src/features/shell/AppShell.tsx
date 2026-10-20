@@ -1,15 +1,15 @@
 import { useEffect, useRef, useState } from 'react'
 import { Link, NavLink, Outlet } from 'react-router-dom'
 import { useQuery, useQueryClient } from '@tanstack/react-query'
-import { Bell, CirclePlus, House, MessageCircle, Search, type LucideIcon } from 'lucide-react'
+import { Bell, CirclePlus, House, MessageCircle, Search, ShieldCheck, type LucideIcon } from 'lucide-react'
 import { api } from '../../api/client'
+import { setTitleUnread } from '../../lib/title'
 import { useSocket } from '../../lib/useSocket'
 import { useMe } from '../auth/auth'
 import { Avatar } from '../ui/Avatar'
 import { focusRing } from '../ui/cls'
-import { setTitleUnread } from '../../lib/title'
 
-type Badge = 'chats' | 'notifications'
+type Badge = 'chats' | 'notifications' | 'moderation'
 type Item = { to: string; label: string; icon: LucideIcon; end?: boolean; badge?: Badge }
 type UserEvent =
   | { type: 'inbox'; group_name: string | null }
@@ -27,6 +27,8 @@ const items: Item[] = [
   { to: '/notifications', label: 'Сповіщення', icon: Bell, badge: 'notifications' },
 ]
 
+const adminItem: Item = { to: '/moderation', label: 'Модерація', icon: ShieldCheck, badge: 'moderation' }
+
 function useHeaderVisible() {
   const [visible, setVisible] = useState(true)
   useEffect(() => {
@@ -42,6 +44,7 @@ function useHeaderVisible() {
   return visible
 }
 
+// Один сокет на всё приложение: пока он открыт, вы «в мережі». Пачки сигналов склеиваем в один запрос.
 function useInboxSocket() {
   const qc = useQueryClient()
   const timer = useRef<ReturnType<typeof setTimeout>>(undefined)
@@ -92,27 +95,37 @@ export function AppShell() {
   useInboxSocket()
   const visible = useHeaderVisible()
   const me = useMe().data
+  const isAdmin = !!me?.is_site_admin
 
   const notifications = useQuery({
     queryKey: ['unread'],
     queryFn: () => api<{ unread: number }>('/notifications/unread-count/'),
-    refetchInterval: 60_000,
   })
   const chats = useQuery({
     queryKey: ['chats-unread'],
     queryFn: () => api<{ unread: number }>('/chats/unread-count/'),
   })
+  const moderation = useQuery({
+    queryKey: ['moderation-count'],
+    queryFn: () => api<{ pending: number }>('/moderation/count/'),
+    enabled: isAdmin,                         // у обычных пользователей запроса нет вообще
+    refetchInterval: 60_000,
+  })
+
   const counts: Record<Badge, number> = {
     notifications: notifications.data?.unread ?? 0,
     chats: chats.data?.unread ?? 0,
+    moderation: moderation.data?.pending ?? 0,
   }
 
+  // в заголовок вкладки идут только уведомления и чаты, очередь модерации туда не входит
   const totalUnread = counts.notifications + counts.chats
   useEffect(() => {
     setTitleUnread(totalUnread)
-    return () => setTitleUnread(0)       // при выходе из аккаунта счётчик пропадает
+    return () => setTitleUnread(0)            // при выходе из аккаунта счётчик пропадает
   }, [totalUnread])
 
+  const navItems = isAdmin ? [...items, adminItem] : items
   const countOf = (i: Item) => (i.badge ? counts[i.badge] : 0)
 
   return (
@@ -124,7 +137,7 @@ export function AppShell() {
       >
         <Link to="/" className="font-brand text-2xl leading-none text-bark">Roon</Link>
         <nav aria-label="Основна навігація" className="hidden gap-1 sm:flex">
-          {items.map((i) => <NavItem key={i.to} item={i} count={countOf(i)} />)}
+          {navItems.map((i) => <NavItem key={i.to} item={i} count={countOf(i)} />)}
         </nav>
         <Link to="/me" aria-label="Мій профіль" className={`rounded-full ${focusRing}`}>
           <Avatar src={me?.avatar} name={me?.username} className="size-9" />
@@ -137,7 +150,7 @@ export function AppShell() {
         aria-label="Навігація"
         className="fixed inset-x-0 bottom-0 z-40 flex justify-around border-t border-sand bg-cream/95 px-2 pb-[env(safe-area-inset-bottom)] pt-1.5 backdrop-blur sm:hidden"
       >
-        {items.map((i) => <NavItem key={i.to} item={i} count={countOf(i)} />)}
+        {navItems.map((i) => <NavItem key={i.to} item={i} count={countOf(i)} />)}
       </nav>
     </div>
   )

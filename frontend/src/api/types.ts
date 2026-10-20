@@ -96,4 +96,22 @@ export interface ChatMessage {
   created: string
 }
 
+export interface Report {
+  id: number
+  user: ProfileMini
+  reason: string
+  text: string
+  created_at: string
+}
+
+export interface ReportedPost {
+  id: number
+  profile: ProfileMini
+  text: string | null
+  timestamp: string
+  media_items: MediaItem[]
+  reports: number
+  complaints: Report[]
+}
+
 export interface CursorPage<T> { next: string | null; previous: string | null; results: T[] }

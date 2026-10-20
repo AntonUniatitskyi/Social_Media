@@ -14,3 +14,5 @@ export const btnPrimaryLg = `inline-flex h-11 items-center justify-center gap-2 
 export const btnSoftLg = `inline-flex h-11 items-center justify-center rounded-xl border border-sand bg-white/60 px-4 font-medium text-bark transition-colors hover:bg-sand/40 ${focusRing}`
 
 export const rowFocus = 'focus-visible:outline-2 focus-visible:-outline-offset-2 focus-visible:outline-clay'
+
+export const btnDanger = `rounded-lg bg-red-700 px-3 py-1.5 text-sm font-medium text-white transition-colors hover:bg-red-800 disabled:opacity-60 ${focusRing}`

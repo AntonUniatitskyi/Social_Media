@@ -5,7 +5,7 @@ import type { MediaItem } from '../../api/types'
 const arrow =
   'absolute top-1/2 hidden size-9 -translate-y-1/2 place-items-center rounded-full bg-white/85 text-stone-800 shadow opacity-0 transition-opacity group-hover:opacity-100 focus-visible:opacity-100 focus-visible:outline-2 focus-visible:outline-clay sm:grid'
 
-export function MediaCarousel({ items, onDoubleTap }: { items: MediaItem[]; onDoubleTap: () => void }) {
+export function MediaCarousel({ items, onDoubleTap }: { items: MediaItem[]; onDoubleTap?: () => void }) {
   const track = useRef<HTMLDivElement>(null)
   const lastTap = useRef(0)
   const [index, setIndex] = useState(0)
@@ -22,6 +22,7 @@ export function MediaCarousel({ items, onDoubleTap }: { items: MediaItem[]; onDo
   }
 
   function tap(e: React.PointerEvent) {
+    if (!onDoubleTap) return
     if (e.pointerType === 'mouse' && e.button !== 0) return
     const now = Date.now()
     if (now - lastTap.current < 300) {
@@ -60,7 +61,7 @@ export function MediaCarousel({ items, onDoubleTap }: { items: MediaItem[]; onDo
                 alt=""
                 loading="lazy"
                 draggable={false}
-                onPointerUp={tap}
+                onPointerUp={onDoubleTap ? tap : undefined}
                 className="size-full touch-manipulation select-none object-cover"
               />
             )}
@@ -68,7 +69,7 @@ export function MediaCarousel({ items, onDoubleTap }: { items: MediaItem[]; onDo
         ))}
       </div>
 
-      {burst > 0 && (
+      {onDoubleTap && burst > 0 && (
         <div aria-hidden className="pointer-events-none absolute inset-0 grid place-items-center">
           <PawPrint key={burst} className="size-24 fill-white text-white drop-shadow-lg motion-safe:animate-paw-pop" />
         </div>
